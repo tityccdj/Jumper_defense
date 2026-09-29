@@ -63,13 +63,23 @@ public class WaveSpawner : MonoBehaviour
         }
 
         isSpawning = false;
+
+        // --- ส่วนที่เพิ่มเข้ามาใหม่: รอจนกว่าศัตรูจะตายหมด ---
+        Debug.Log("ปล่อยศัตรูครบแล้ว! รอผู้เล่นเคลียร์มอนสเตอร์...");
+
+        // เช็คว่ายังมีวัตถุที่ติด Tag "Enemy" อยู่ในฉากหรือไม่ 
+        // (หน่วงเวลาเช็คทุกๆ 0.5 วิ เกมจะได้ไม่กระตุก)
+        while (GameObject.FindGameObjectsWithTag("Enemy").Length > 0)
+        {
+            yield return new WaitForSeconds(0.5f);
+        }
+        // ------------------------------------------
+
         currentWaveIndex++; // เตรียมเข้าสู่เวฟถัดไป
 
-        // รอเวลาพักเบรคก่อนเริ่มเวฟต่อไป
-        Debug.Log("จบเวฟ! พักเบรค " + timeBetweenWaves + " วินาที");
+        // เมื่อศัตรูตายหมด ค่อยเริ่มนับถอยหลังพักเบรค
+        Debug.Log("เคลียร์เวฟสำเร็จ! พักเบรค " + timeBetweenWaves + " วินาที");
         yield return new WaitForSeconds(timeBetweenWaves);
-
-        // วนลูปกลับไปเริ่มเวฟใหม่
         StartCoroutine(StartNextWave());
     }
 }
