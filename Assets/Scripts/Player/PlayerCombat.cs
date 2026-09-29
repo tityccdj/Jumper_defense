@@ -35,14 +35,28 @@ public class PlayerCombat : MonoBehaviour
 
         if (hit != null)
         {
-            // **จุดสำคัญ:** พระเอกของเรา (Interface) มาแล้ว!
-            // เราไม่ต้องเช็คว่ามันคือ BaseEnemy หรือบอส แค่ถามว่ามันมี IDamageable ไหม
-            IDamageable damageable = hit.GetComponent<IDamageable>();
+            bool hitSomething = false;
 
+            // 1. เช็คว่าเหยียบมอนสเตอร์ไหม (ทำดาเมจ)
+            IDamageable damageable = hit.GetComponent<IDamageable>();
             if (damageable != null)
             {
-                damageable.TakeDamage(stompDamage); // สั่งทำดาเมจ 10
-                Bounce(); // สั่งให้ Player เด้งขึ้น
+                damageable.TakeDamage(stompDamage);
+                hitSomething = true;
+            }
+
+            // 2. เช็คว่าเหยียบป้อมไหม (แจกบัฟ)
+            IBuffable buffable = hit.GetComponent<IBuffable>();
+            if (buffable != null)
+            {
+                buffable.ApplyBuff();
+                hitSomething = true;
+            }
+
+            // ถ้าเหยียบโดนอะไรสักอย่าง (มอนหรือป้อม) ให้เด้ง
+            if (hitSomething)
+            {
+                Bounce();
                 controller.isGroundPounding = false;
             }
         }
