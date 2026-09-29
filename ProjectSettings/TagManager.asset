@@ -8,6 +8,7 @@ TagManager:
   - Spike
   - TowerNode
   - Tower
+  - Base
   layers:
   - Default
   - TransparentFX

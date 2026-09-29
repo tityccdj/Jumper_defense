@@ -18,6 +18,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private float horizontalInput;
     private bool isGrounded;
+    [HideInInspector] public bool isGroundPounding = false;
 
     void Start()
     {
@@ -28,7 +29,10 @@ public class PlayerController : MonoBehaviour
     {
         // 1. เช็คว่าเท้าติดพื้นไหม (สร้างวงกลมเล็กๆ ที่ตำแหน่ง groundCheck)
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-
+        if (isGrounded)
+        {
+            isGroundPounding = false;
+        }
         // 2. รับค่าปุ่มเดินซ้ายขวา (A/D หรือ ลูกศร)
         horizontalInput = Input.GetAxisRaw("Horizontal");
 
@@ -43,6 +47,7 @@ public class PlayerController : MonoBehaviour
         {
             // จับตัวละครพุ่งลงพื้นอย่างรวดเร็ว
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, -groundPoundForce);
+            isGroundPounding = true;
         }
         //if (rb.linearVelocity.y < 0)
         //{
