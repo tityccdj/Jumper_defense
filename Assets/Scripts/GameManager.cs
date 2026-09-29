@@ -1,32 +1,45 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    // ทำให้เป็น Singleton เพื่อให้สคริปต์อื่นเรียกใช้ได้ง่ายๆ ผ่าน GameManager.Instance
     public static GameManager Instance { get; private set; }
 
     [Header("Economy")]
     public int coins = 0;
     public int shards = 0;
 
+    [Header("Tower System")]
+    public GameObject normalTowerPrefab;
+    private TowerNode selectedNode;
+
     private void Awake()
     {
-        // ตรวจสอบว่ามี GameManager ตัวอื่นอยู่ไหม ถ้ามีให้ทำลายทิ้ง (ป้องกันการซ้ำซ้อน)
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
     }
 
+    private void Start()
+    {
+        UIManager.Instance.UpdateCoinUI(coins); // สั่ง UI ให้อัปเดตเงิน
+    }
+    private void Update()
+    {
+        // เช็คว่าหน้าต่าง Shop เปิดอยู่ไหม (ถ้าเปิดอยู่ selectedNode จะไม่เป็น null)
+        if (selectedNode != null)
+        {
+            // เช็คว่ามีการกดปุ่มใดๆ (Input.anyKeyDown) 
+            // และ ป้องกันไม่ให้นับรวมการคลิกเมาส์ ซ้าย(0), ขวา(1), กลาง(2)
+            if (Input.anyKeyDown && !Input.GetMouseButtonDown(0) && !Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
+            {
+                CloseShop();
+            }
+        }
+    }
     public void AddCoin(int amount)
     {
         coins += amount;
-        Debug.Log("มอนสเตอร์ดรอปเงิน! ตอนนี้มี: " + coins + " เหรียญ");
-        // (เดี๋ยวเราจะมาเขียนโค้ดอัปเดตตัวเลขขึ้นหน้าจอ UI ตรงนี้ในอนาคตครับ)
+        UIManager.Instance.UpdateCoinUI(coins); // สั่ง UI ให้อัปเดตเงิน
     }
 
     public bool SpendCoin(int amount)
@@ -34,11 +47,34 @@ public class GameManager : MonoBehaviour
         if (coins >= amount)
         {
             coins -= amount;
-            Debug.Log("ซื้อป้อมสำเร็จ! เหลือเงิน: " + coins + " เหรียญ");
-            return true; // จ่ายเงินผ่าน
+            UIManager.Instance.UpdateCoinUI(coins); // สั่ง UI ให้อัปเดตเงิน
+            return true;
         }
+        return false;
+    }
 
-        Debug.Log("เงินไม่พอ! ขาดอีก: " + (amount - coins) + " เหรียญ");
-        return false; // จ่ายไม่ผ่าน (เงินไม่พอ)
+    public void OpenShop(TowerNode node)
+    {
+        selectedNode = node;
+        // ส่งตำแหน่งของ node ไปให้ UIManager ย้ายหน้าต่าง Shop
+        UIManager.Instance.OpenShopAtNode(node.transform);
+        Time.timeScale = 0f;
+    }
+
+    public void CloseShop()
+    {
+        selectedNode = null;
+        // สั่งปิดแบบใหม่
+        UIManager.Instance.CloseShop();
+        Time.timeScale = 1f;
+    }
+
+    public void BuyNormalTower()
+    {
+        if (SpendCoin(10))
+        {
+            selectedNode.BuildTower(normalTowerPrefab);
+            CloseShop();
+        }
     }
 }

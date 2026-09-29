@@ -29,7 +29,7 @@ public class PlayerController : MonoBehaviour
     {
         // 1. เช็คว่าเท้าติดพื้นไหม (สร้างวงกลมเล็กๆ ที่ตำแหน่ง groundCheck)
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-        if (isGrounded)
+        if (isGrounded && rb.linearVelocity.y >= -0.1f)
         {
             isGroundPounding = false;
         }
@@ -43,9 +43,8 @@ public class PlayerController : MonoBehaviour
         }
 
         // 4. ระบบ Ground Pound: พุ่งลงมาเหยียบ (อยู่กลางอากาศ + กดล่าง + กดกระโดด)
-        if (!isGrounded && Input.GetAxisRaw("Vertical") < 0 && Input.GetButtonDown("Jump"))
+        if (!isGrounded && !isGroundPounding && Input.GetAxisRaw("Vertical") < 0 && Input.GetButtonDown("Jump") && rb.linearVelocity.y < 2f)
         {
-            // จับตัวละครพุ่งลงพื้นอย่างรวดเร็ว
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, -groundPoundForce);
             isGroundPounding = true;
         }

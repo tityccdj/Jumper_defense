@@ -19,13 +19,16 @@ public class HealthSystem : MonoBehaviour, IDamageable
     private SpriteRenderer[] allSprites;
 
     private bool isInvincible = false;
-
-    void Start()
+    private void Awake()
     {
         currentHealth = maxHealth;
 
         // ให้โค้ดค้นหา SpriteRenderer "ทั้งหมด" ในตัวมันและลูกๆ ทันทีที่เริ่มเกม
         allSprites = GetComponentsInChildren<SpriteRenderer>();
+    }
+    void Start()
+    {
+        
     }
 
     public void TakeDamage(int damage)
@@ -83,5 +86,10 @@ public class HealthSystem : MonoBehaviour, IDamageable
     private void Die()
     {
         gameObject.SetActive(false);
+    }
+    // ฟังก์ชันสำหรับส่งค่าเลือดปัจจุบันออกไปให้ UI อ่าน
+    public int GetCurrentHealth()
+    {
+        return currentHealth;
     }
 }
