@@ -5,7 +5,7 @@ using UnityEngine.Events;
 public class HealthSystem : MonoBehaviour, IDamageable
 {
     public int maxHealth = 12;
-    private int currentHealth;
+    public int currentHealth;
     [Header("Death Settings")]
     public bool destroyOnDie = true;
 
