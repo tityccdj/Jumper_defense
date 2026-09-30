@@ -57,4 +57,21 @@ public class DamageFeedback : MonoBehaviour
             }
         }
     }
+    public void ResetColor()
+    {
+        // ป้องกัน Error กรณีที่โดนปิดก่อนที่ฟังก์ชัน Start จะทำงาน
+        if (allSprites == null || originalColors == null) return;
+
+        for (int i = 0; i < allSprites.Length; i++)
+        {
+            if (allSprites[i] != null)
+            {
+                allSprites[i].color = originalColors[i];
+            }
+        }
+    }
+    private void OnDisable()
+    {
+        ResetColor();
+    }
 }

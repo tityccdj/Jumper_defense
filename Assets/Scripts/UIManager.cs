@@ -7,6 +7,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Economy UI")]
     public TextMeshProUGUI coinText;
+    public TextMeshProUGUI shardText;
 
     [Header("Health UI")]
     public TextMeshProUGUI playerHealthText;
@@ -18,6 +19,20 @@ public class UIManager : MonoBehaviour
     [Header("Shop UI")]
     public GameObject shopUI;
 
+    [Header("Game State UI")]
+    public GameObject gameOverPanel; // หน้าจอแพ้
+    public GameObject winPanel;      // หน้าจอชนะ
+    public GameObject intermissionPanel;
+
+    public void ShowGameOver()
+    {
+        if (gameOverPanel != null) gameOverPanel.SetActive(true);
+    }
+
+    public void ShowWin()
+    {
+        if (winPanel != null) winPanel.SetActive(true);
+    }
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -72,5 +87,14 @@ public class UIManager : MonoBehaviour
     public void CloseShop()
     {
         if (shopUI != null) shopUI.SetActive(false);
+    }
+    public void UpdateShardUI(int shards)
+    {
+        if (shardText != null) shardText.text = "Shards: " + shards;
+    }
+
+    public void ToggleIntermission(bool isOpen)
+    {
+        if (intermissionPanel != null) intermissionPanel.SetActive(isOpen);
     }
 }

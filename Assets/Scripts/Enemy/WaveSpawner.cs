@@ -21,6 +21,7 @@ public class WaveSpawner : MonoBehaviour
 
     [Header("UI (Optional)")]
     public TextMeshProUGUI waveText;  // เอาไว้แสดงผลบนจอว่าถึงเวฟไหนแล้ว
+    public GameObject waveClearText;
 
     private int currentWaveIndex = 0;
     private bool isSpawning = false;
@@ -37,6 +38,10 @@ public class WaveSpawner : MonoBehaviour
         {
             Debug.Log("ยินดีด้วย! คุณเคลียร์ครบทุกเวฟแล้ว!");
             if (waveText != null) waveText.text = "You Win!";
+
+            // --- เพิ่มบรรทัดนี้เข้าไป เพื่อเรียกคำสั่งชนะ ---
+            if (GameManager.Instance != null) GameManager.Instance.GameWin();
+
             yield break;
         }
 
@@ -75,11 +80,30 @@ public class WaveSpawner : MonoBehaviour
         }
         // ------------------------------------------
 
+        // --- ส่วนที่เพิ่มเข้ามา: รอ 3 วินาที ค่อยเด้งหน้าจอ ---
+        if (waveClearText != null) waveClearText.SetActive(true);
+        Debug.Log("ศัตรูตายหมดแล้ว! โชว์ข้อความ Wave Clear 3 วินาที...");
+
+        yield return new WaitForSeconds(3f); // รอ 3 วินาที
+
+        // ปิดข้อความ Wave Clear ก่อนเด้งหน้าต่าง Shard
+        if (waveClearText != null) waveClearText.SetActive(false);
+        // ------------------------------------------------
+
         currentWaveIndex++; // เตรียมเข้าสู่เวฟถัดไป
 
-        // เมื่อศัตรูตายหมด ค่อยเริ่มนับถอยหลังพักเบรค
-        Debug.Log("เคลียร์เวฟสำเร็จ! พักเบรค " + timeBetweenWaves + " วินาที");
-        yield return new WaitForSeconds(timeBetweenWaves);
-        StartCoroutine(StartNextWave());
+        // แจก Shard และเปิดหน้าจอ
+        Debug.Log("เคลียร์เวฟสำเร็จ! แจก Shard และรอผู้เล่นกดยืนยัน...");
+
+        // ให้ Shard เป็นรางวัลจบเวฟ (สามารถเขียนสูตรแจกตาม waveIndex ได้ในอนาคต)
+        if (GameManager.Instance != null) GameManager.Instance.AddShard(1);
+
+        // เปิดหน้าจอพักเบรค
+        if (UIManager.Instance != null) UIManager.Instance.ToggleIntermission(true);
+    }
+    public void StartNextWaveFromUI()
+    {
+        if (UIManager.Instance != null) UIManager.Instance.ToggleIntermission(false); // ปิดหน้าจอพักเบรค
+        StartCoroutine(StartNextWave()); // สั่งรันเวฟต่อไป
     }
 }

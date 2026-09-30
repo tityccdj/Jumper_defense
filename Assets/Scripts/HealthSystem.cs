@@ -6,6 +6,8 @@ public class HealthSystem : MonoBehaviour, IDamageable
 {
     public int maxHealth = 12;
     private int currentHealth;
+    [Header("Death Settings")]
+    public bool destroyOnDie = true;
 
     [Header("Invincibility (I-Frames)")]
     public bool hasInvincibility = false;
@@ -85,11 +87,21 @@ public class HealthSystem : MonoBehaviour, IDamageable
 
     private void Die()
     {
-        gameObject.SetActive(false);
+        onDie?.Invoke(); // เรียก Event แจ้งเตือนว่าตายแล้ว
+        
+        if (destroyOnDie)
+        {
+            Destroy(gameObject); // ลบทิ้งเฉพาะตัวที่ตั้งให้ลบทิ้ง
+        }
     }
     // ฟังก์ชันสำหรับส่งค่าเลือดปัจจุบันออกไปให้ UI อ่าน
     public int GetCurrentHealth()
     {
         return currentHealth;
+    }
+    public void Revive()
+    {
+        currentHealth = maxHealth; // เลือดกลับมาเต็ม
+        if (UIManager.Instance != null) UIManager.Instance.UpdatePlayerHealthUI(); // อัปเดตหลอดเลือด
     }
 }
