@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5264338118998143856}
   - component: {fileID: 9142611631520419741}
   - component: {fileID: -5266877698784608144}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: RangerBullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -153,7 +153,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d36fe6ed4ad5b54cb36f837f95ba105, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 7
+  speed: 7.5
   damage: 1
 --- !u!50 &-5266877698784608144
 Rigidbody2D:
@@ -169,8 +169,8 @@ Rigidbody2D:
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_GravityScale: 0
+  m_AngularDamping: 0.45
+  m_GravityScale: 0.4
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2

@@ -107,7 +107,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 15
+  m_SortingOrder: 25
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0.23773581, g: 0.23773581, b: 0.23773581, a: 1}
   m_FlipX: 0
@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: 8337383342291013850}
   - component: {fileID: 5763572314672381161}
   m_Layer: 9
-  m_Name: NormalTower
+  m_Name: NormalTower_lvl1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -198,7 +198,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10
+  m_SortingOrder: 20
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0.735849, g: 0.735849, b: 0.735849, a: 1}
   m_FlipX: 0
@@ -234,6 +234,9 @@ MonoBehaviour:
   blinkSpeed: 0.15
   bulletPrefab: {fileID: 4481330140678903920, guid: 998e39784e043724ab99651a987931b9, type: 3}
   firePoint: {fileID: 5329869569663357263}
+  upgradedTowerPrefab: {fileID: 3048273042577524976, guid: 3170e2876d1f1064891d654c671b39ad, type: 3}
+  isMaxLevel: 0
+  myNode: {fileID: 0}
 --- !u!61 &8337383342291013850
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -375,7 +378,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 12
+  m_SortingOrder: 22
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0.5396226, g: 0.5396226, b: 0.5396226, a: 1}
   m_FlipX: 0

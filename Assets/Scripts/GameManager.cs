@@ -12,10 +12,6 @@ public class GameManager : MonoBehaviour
     public int coins = 0;
     public int shards = 0;
 
-    [Header("Tower System")]
-    public GameObject normalTowerPrefab;
-    private TowerNode selectedNode;
-
     [Header("Player Respawn")]
     public Transform respawnPoint;      // จุดเกิด (เอา Base มาใส่)
     public float respawnCooldown = 10f; // เวลาเกิดใหม่ (วินาที)
@@ -34,16 +30,7 @@ public class GameManager : MonoBehaviour
     }
     private void Update()
     {
-        // เช็คว่าหน้าต่าง Shop เปิดอยู่ไหม (ถ้าเปิดอยู่ selectedNode จะไม่เป็น null)
-        if (selectedNode != null)
-        {
-            // เช็คว่ามีการกดปุ่มใดๆ (Input.anyKeyDown) 
-            // และ ป้องกันไม่ให้นับรวมการคลิกเมาส์ ซ้าย(0), ขวา(1), กลาง(2)
-            if (Input.anyKeyDown && !Input.GetMouseButtonDown(0) && !Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
-            {
-                CloseShop();
-            }
-        }
+
     }
 
     public void AddCoin(int amount)
@@ -67,30 +54,15 @@ public class GameManager : MonoBehaviour
         }
         return false;
     }
-
-    public void OpenShop(TowerNode node)
+    public bool SpendShard(int amount)
     {
-        selectedNode = node;
-        // ส่งตำแหน่งของ node ไปให้ UIManager ย้ายหน้าต่าง Shop
-        UIManager.Instance.OpenShopAtNode(node.transform);
-        Time.timeScale = 0f;
-    }
-
-    public void CloseShop()
-    {
-        selectedNode = null;
-        // สั่งปิดแบบใหม่
-        UIManager.Instance.CloseShop();
-        Time.timeScale = 1f;
-    }
-
-    public void BuyNormalTower()
-    {
-        if (SpendCoin(10))
+        if (shards >= amount)
         {
-            selectedNode.BuildTower(normalTowerPrefab);
-            CloseShop();
+            shards -= amount;
+            UIManager.Instance.UpdateShardUI(shards);
+            return true;
         }
+        return false;
     }
 
     public void GameOver()

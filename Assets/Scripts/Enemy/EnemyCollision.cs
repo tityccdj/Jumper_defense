@@ -18,7 +18,11 @@ public class EnemyCollision : MonoBehaviour
             PlayerController playerCtrl = collider.gameObject.GetComponent<PlayerController>();
 
             // ข้ามดาเมจถ้าผู้เล่นกำลังพุ่งลงมาเหยียบ
-            if (playerCtrl != null && playerCtrl.isGroundPounding) return;
+            bool isSpike = transform.parent.GetComponent<SpikeArmor>() != null;
+
+            // ถ้าไม่ใช่หนาม และผู้เล่นกำลังพุ่งลงมา ให้ข้ามดาเมจไป
+            // (แปลว่าถ้าเป็นหนาม มันจะไม่ข้ามดาเมจ ทิ่มผู้เล่นทันที!)
+            if (!isSpike && playerCtrl != null && playerCtrl.isGroundPounding) return;
 
             if (Time.time >= nextDamageTime)
             {

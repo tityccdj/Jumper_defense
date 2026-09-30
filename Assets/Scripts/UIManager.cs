@@ -18,6 +18,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Shop UI")]
     public GameObject shopUI;
+    public GameObject upgradeShopUI; // <--- เพิ่มบรรทัดนี้
 
     [Header("Game State UI")]
     public GameObject gameOverPanel; // หน้าจอแพ้
@@ -83,10 +84,23 @@ public class UIManager : MonoBehaviour
             shopUI.transform.position = screenPos;
         }
     }
+    public void OpenUpgradeShopAtNode(Transform nodeTransform)
+    {
+        if (upgradeShopUI != null)
+        {
+            upgradeShopUI.SetActive(true);
 
+            // แปลงพิกัดจากในเกมมาเป็นพิกัดหน้าจอ
+            Vector3 screenPos = Camera.main.WorldToScreenPoint(nodeTransform.position);
+            screenPos.y += 80f;
+
+            upgradeShopUI.transform.position = screenPos;
+        }
+    }
     public void CloseShop()
     {
         if (shopUI != null) shopUI.SetActive(false);
+        if (upgradeShopUI != null) upgradeShopUI.SetActive(false); // <--- เพิ่มบรรทัดนี้
     }
     public void UpdateShardUI(int shards)
     {

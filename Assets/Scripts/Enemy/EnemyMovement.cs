@@ -6,9 +6,12 @@ public class EnemyMovement : MonoBehaviour
     public float moveSpeed = 3f;
     private Rigidbody2D rb;
     private Transform targetBase; // ตัวแปรสำหรับเก็บตำแหน่งฐาน
+    private float originalSpeed;
+    private Coroutine slowCoroutine;
 
     void Start()
     {
+        originalSpeed = moveSpeed;
         moveSpeed = moveSpeed + Random.Range(-0.3f, 0.3f);
         rb = GetComponent<Rigidbody2D>();
 
@@ -51,5 +54,23 @@ public class EnemyMovement : MonoBehaviour
         {
             rb.linearVelocity = new Vector2(-moveSpeed, rb.linearVelocity.y);
         }
+    }
+        public void ApplySlow(float multiplier, float duration)
+    {
+        if (slowCoroutine != null) StopCoroutine(slowCoroutine);
+        slowCoroutine = StartCoroutine(SlowRoutine(multiplier, duration));
+    }
+
+    private System.Collections.IEnumerator SlowRoutine(float multiplier, float duration)
+    {
+        moveSpeed = originalSpeed * multiplier; // เดินช้าลง
+
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null) sr.color = new Color(0.5f, 0.8f, 1f); // ตัวฟ้าแข็ง
+
+        yield return new WaitForSeconds(duration);
+
+        moveSpeed = originalSpeed; // คืนความเร็ว
+        if (sr != null) sr.color = Color.white;
     }
 }

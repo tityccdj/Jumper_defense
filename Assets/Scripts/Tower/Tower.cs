@@ -21,6 +21,12 @@ public class Tower : MonoBehaviour, IBuffable
     public GameObject bulletPrefab;
     public Transform firePoint;
 
+    // --- ส่วนที่เพิ่มเข้ามาใหม่สำหรับระบบอัปเกรด ---
+    [Header("Upgrade Settings (ใช้ Shard)")]
+    public GameObject upgradedTowerPrefab; // ใส่ Prefab ป้อมร่าง 2 ที่จะเอามาแทนที่
+    public bool isMaxLevel = false;        // ถ้าเป็นร่าง 2 แล้วให้ติ๊กถูกอันนี้
+    // ----------------------------------------
+
     private bool isBuffed = false;
     private float buffTimer = 0f;
     private Transform currentTarget;
@@ -30,6 +36,17 @@ public class Tower : MonoBehaviour, IBuffable
     private SpriteRenderer[] allSprites;
     private Color[] originalColors;
 
+    [HideInInspector]
+    public TowerNode myNode; // เอาไว้จำว่าป้อมนี้วางอยู่บน Node ไหน
+
+    private void OnMouseDown()
+    {
+        // ถ้าคลิกโดนตัวป้อมโดยตรง ให้ส่งเรื่องไปเปิดหน้าต่างอัปเกรดเลย!
+        if(ShopManager.Instance != null && myNode != null && !isMaxLevel)
+        {
+            ShopManager.Instance.OpenUpgradeShop(myNode);
+        }
+    }
     void Start()
     {
         // 1. หาชิ้นส่วน Sprite ทั้งหมดและจำสีเดิมไว้ตั้งแต่เริ่มเกม
@@ -51,7 +68,7 @@ public class Tower : MonoBehaviour, IBuffable
             if (buffTimer <= 0)
             {
                 isBuffed = false;
-                // เมื่อหมดเวลา Coroutine ด้านล่างจะหยุดทำงาน และคืนสีให้เอง
+                // เมื่อหมดเวลา Coroutine จะหยุดทำงาน และคืนสีให้เอง
             }
         }
 
@@ -75,8 +92,6 @@ public class Tower : MonoBehaviour, IBuffable
     {
         buffTimer = buffDuration; // รีเซ็ตเวลาบัฟเป็น 2.5 วินาที
 
-        // ถ้าป้อมยังไม่ได้ติดบัฟอยู่ ให้เริ่มเล่นเอฟเฟกต์กระพริบ
-        // (เช็คเพื่อป้องกันเวลากระโดดเหยียบซ้ำๆ แล้วแสงกระพริบรวน)
         if (!isBuffed)
         {
             isBuffed = true;
@@ -88,10 +103,8 @@ public class Tower : MonoBehaviour, IBuffable
 
     private IEnumerator BuffFlashRoutine()
     {
-        // ทำงานวนไปเรื่อยๆ ตราบใดที่ isBuffed ยังเป็น true
         while (isBuffed)
         {
-            // เปลี่ยนเป็นสีบัฟ
             for (int i = 0; i < allSprites.Length; i++)
             {
                 if (allSprites[i] != null) allSprites[i].color = buffColor;
@@ -99,7 +112,6 @@ public class Tower : MonoBehaviour, IBuffable
 
             yield return new WaitForSeconds(blinkSpeed);
 
-            // คืนเป็นสีดั้งเดิม
             for (int i = 0; i < allSprites.Length; i++)
             {
                 if (allSprites[i] != null) allSprites[i].color = originalColors[i];
@@ -115,7 +127,6 @@ public class Tower : MonoBehaviour, IBuffable
         }
     }
 
-    // --- โค้ดส่วนล่างเหมือนเดิมทั้งหมด ---
     void UpdateTarget()
     {
         Collider2D[] enemies = Physics2D.OverlapCircleAll(transform.position, attackRange, enemyLayer);
@@ -148,6 +159,10 @@ public class Tower : MonoBehaviour, IBuffable
         Bullet bulletScript = bulletGO.GetComponent<Bullet>();
         if (bulletScript != null) bulletScript.target = target;
     }
+
+    // --- ส่วนที่เพิ่มเข้ามาใหม่ ฟังก์ชันสั่งอัปเกรดป้อม ---
+
+    // ---------------------------------------------
 
     private void OnDrawGizmosSelected()
     {

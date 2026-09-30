@@ -9,13 +9,13 @@ public class RangerShooter : MonoBehaviour
     public float attackRange = 6f;
     public float fireRate = 2f;
 
-    // --- เพิ่มช่องปรับความเร็วการหมุนตรงนี้ครับ ---
     [Header("Aim Settings")]
-    public float turnSpeed = 150f;  // ความเร็วในการหมุนปืน (องศาต่อวินาที) ค่าน้อย = หมุนช้า, ค่ามาก = หมุนเร็ว
+    public float turnSpeed = 150f;
 
     private Transform player;
     private float nextFireTime;
     private MonoBehaviour moveScript;
+    private Rigidbody2D rb; // --- เพิ่มตัวแปรเบรก ---
 
     void Start()
     {
@@ -23,6 +23,7 @@ public class RangerShooter : MonoBehaviour
         if (p != null) player = p.transform;
 
         moveScript = GetComponent("EnemyMovement") as MonoBehaviour;
+        rb = GetComponent<Rigidbody2D>(); // --- ดึง Rigidbody มาใช้เบรก ---
     }
 
     void Update()
@@ -33,15 +34,20 @@ public class RangerShooter : MonoBehaviour
             return;
         }
 
-        // 1. ค่อยๆ หมุนปืนเล็งตามผู้เล่นตลอดเวลา
         AimAtPlayer();
 
-        // 2. วัดระยะห่าง
         float distance = Vector2.Distance(transform.position, player.position);
 
         if (distance <= attackRange)
         {
-            if (moveScript != null) moveScript.enabled = false; // หยุดเดิน
+            // --- ถ้าระยะถึง และกำลังเดินอยู่ ให้สั่งปิดสคริปต์เดิน + เหยียบเบรก! ---
+            if (moveScript != null && moveScript.enabled == true)
+            {
+                moveScript.enabled = false;
+
+                // สั่งเบรกแกน X ให้เป็น 0 (ส่วนแกน Y ปล่อยให้ตกลงตามแรงโน้มถ่วงปกติ)
+                if (rb != null) rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+            }
 
             // ยิง
             if (Time.time >= nextFireTime)
@@ -52,24 +58,35 @@ public class RangerShooter : MonoBehaviour
         }
         else
         {
-            if (moveScript != null) moveScript.enabled = true; // เดินต่อ
+            // --- ถ้านอกระยะ ให้เปิดสคริปต์กลับมาเดินต่อ ---
+            if (moveScript != null && moveScript.enabled == false)
+            {
+                moveScript.enabled = true;
+            }
         }
     }
 
-    // แก้ไขฟังก์ชันหมุนปืน ให้หมุนแบบมีดีเลย์
     private void AimAtPlayer()
     {
         if (gunPivot != null && player != null)
         {
-            // 1. หาเวกเตอร์ทิศทาง
+            // 1. หาเวกเตอร์ทิศทางปกติ (เอาปลายทาง ลบ ต้นทาง)
             Vector2 direction = player.position - gunPivot.position;
 
-            // 2. คำนวณหาองศาเป้าหมายที่ควรจะหันไป
+            // 2. *** ไม้ตายแก้บั๊กกระจกสะท้อน ***
+            // ถ้าตัวแม่หันไปทางซ้าย (Scale X ติดลบ) โลกของมันจะกลับด้าน
+            // เราจึงต้องคูณทิศทางด้วย -1 เพื่อให้ผลลัพธ์การหมุนกลับมาถูกต้องเป๊ะ!
+            if (transform.localScale.x < 0)
+            {
+                direction = -direction;
+            }
+
+            // 3. คำนวณองศาจาก direction ที่ปรับแก้แล้ว
             float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
             Quaternion targetRotation = Quaternion.Euler(0, 0, targetAngle);
 
-            // 3. สั่งให้ค่อยๆ หมุนจาก "องศาปัจจุบัน" ไปหา "องศาเป้าหมาย" ด้วยความเร็ว turnSpeed
-            gunPivot.rotation = Quaternion.RotateTowards(gunPivot.rotation, targetRotation, turnSpeed * Time.deltaTime);
+            // 4. สั่งหมุนแบบ localRotation (หมุนเทียบกับตัวแม่)
+            gunPivot.localRotation = Quaternion.RotateTowards(gunPivot.localRotation, targetRotation, turnSpeed * Time.deltaTime);
         }
     }
 

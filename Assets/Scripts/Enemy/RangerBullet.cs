@@ -2,31 +2,43 @@
 
 public class RangerBullet : MonoBehaviour
 {
-    public float speed = 7f;
+    public float speed = 10f; // อาจจะต้องปรับเลขนี้เพิ่มขึ้นจากเดิม เพราะตอนนี้มันคือ "แรงดีด" แล้ว
     public int damage = 1;
+
+    private Rigidbody2D rb;
 
     void Start()
     {
-        // ทำลายตัวเองใน 3 วินาที
+        // 1. ดึง Rigidbody2D มาใช้งาน
+        rb = GetComponent<Rigidbody2D>();
+
+        // 2. ออกแรงดีดกระสุนไปด้านหน้า (ตามองศาที่ปืนเล็งไว้) แค่ครั้งเดียว
+        if (rb != null)
+        {
+            rb.linearVelocity = transform.right * speed;
+        }
+
+        // ทำลายตัวเองใน 3 วินาที (กันขยะเต็มฉาก)
         Destroy(gameObject, 3f);
     }
 
     void Update()
     {
-        // Vector3.right คือแกน X ของตัวกระสุนเอง 
-        // เนื่องจากตอนเกิดมันจะถูกหมุนองศาให้ตรงกับปืน การพุ่งไปแกน X จึงพุ่งตรงไปหา Player พอดีครับ
-        transform.Translate(Vector3.right * speed * Time.deltaTime);
+        // 3. (แถมความเนียน) สั่งให้หัวกระสุนเชิดขึ้น-ปักลง ตามทิศทางที่มันกำลังพุ่งหรือย้อยลงมา
+        if (rb != null && rb.linearVelocity != Vector2.zero)
+        {
+            float angle = Mathf.Atan2(rb.linearVelocity.y, rb.linearVelocity.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.Euler(0, 0, angle);
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // 1. ถ้าชนกับศัตรูด้วยกันเอง (คนยิง หรือเพื่อน) ให้ข้ามคำสั่งด้านล่างไปเลย กระสุนจะได้ไม่พัง
         if (collision.CompareTag("Enemy"))
         {
             return;
         }
 
-        // 2. ถ้าชนกับ Player ให้ทำดาเมจ
         if (collision.CompareTag("Player"))
         {
             IDamageable playerHealth = collision.GetComponent<IDamageable>();
@@ -36,7 +48,6 @@ public class RangerBullet : MonoBehaviour
             }
         }
 
-        // 3. ทำลายกระสุนทิ้ง (ไม่ว่าจะชน Player, ชนกำแพง, หรือชนพื้น)
         Destroy(gameObject);
     }
 }

@@ -37,15 +37,31 @@ public class PlayerCombat : MonoBehaviour
         {
             bool hitSomething = false;
 
-            // 1. เช็คว่าเหยียบมอนสเตอร์ไหม (ทำดาเมจ)
-            IDamageable damageable = hit.GetComponent<IDamageable>();
-            if (damageable != null)
+            // 1. เช็คก่อนว่าตัวที่เหยียบ มีสคริปต์เกราะหนามติดอยู่ไหม?
+            SpikeArmor spike = hit.GetComponent<SpikeArmor>();
+            if (spike != null)
             {
-                damageable.TakeDamage(stompDamage);
-                hitSomething = true;
+                // เหยียบโดนหนาม! ผู้เล่นโดนดาเมจเอง
+                IDamageable playerHealth = GetComponent<IDamageable>();
+                if (playerHealth != null)
+                {
+                    playerHealth.TakeDamage(spike.recoilDamage);
+                    Debug.Log("โอ๊ย! เหยียบโดนตัวหนาม ผู้เล่นเสียเลือด!");
+                }
+                hitSomething = true; // ให้เด้งออกเหมือนเดิม จะได้ไม่โดนซ้ำ
+            }
+            // 2. ถ้าไม่มีหนาม ก็ทำดาเมจใส่มอนสเตอร์ตามปกติ (โค้ดเดิมของคุณ)
+            else
+            {
+                IDamageable damageable = hit.GetComponent<IDamageable>();
+                if (damageable != null)
+                {
+                    damageable.TakeDamage(stompDamage);
+                    hitSomething = true;
+                }
             }
 
-            // 2. เช็คว่าเหยียบป้อมไหม (แจกบัฟ)
+            // 3. เช็คว่าเหยียบป้อมไหม (โค้ดเดิมของคุณ)
             IBuffable buffable = hit.GetComponent<IBuffable>();
             if (buffable != null)
             {
@@ -53,7 +69,7 @@ public class PlayerCombat : MonoBehaviour
                 hitSomething = true;
             }
 
-            // ถ้าเหยียบโดนอะไรสักอย่าง (มอนหรือป้อม) ให้เด้ง
+            // ถ้าเหยียบโดนอะไรสักอย่าง ให้เด้ง
             if (hitSomething)
             {
                 Bounce();
