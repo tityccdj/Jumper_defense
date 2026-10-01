@@ -16,6 +16,7 @@ public class Tower : MonoBehaviour, IBuffable
     public float buffDuration = 2.5f;
     public Color buffColor = Color.yellow; // สีตอนที่ติดบัฟ (ค่าเริ่มต้นสีเหลือง)
     public float blinkSpeed = 0.15f;       // ความเร็วกระพริบ
+    public ParticleSystem overclockParticle;
 
     [Header("References")]
     public GameObject bulletPrefab;
@@ -68,7 +69,13 @@ public class Tower : MonoBehaviour, IBuffable
             if (buffTimer <= 0)
             {
                 isBuffed = false;
-                // เมื่อหมดเวลา Coroutine จะหยุดทำงาน และคืนสีให้เอง
+
+                // --- เพิ่มส่วนนี้: หยุดเล่น Particle เมื่อบัฟหมดเวลา ---
+                if (overclockParticle != null)
+                {
+                    overclockParticle.Stop();
+                }
+                // ------------------------------------------------
             }
         }
 
@@ -90,7 +97,21 @@ public class Tower : MonoBehaviour, IBuffable
 
     public void ApplyBuff()
     {
-        buffTimer = buffDuration; // รีเซ็ตเวลาบัฟเป็น 2.5 วินาที
+        if (EnchantManager.Instance != null && EnchantManager.Instance.hasTowerOverclock)
+        {
+            buffTimer = 5f;
+
+            // --- เพิ่มส่วนนี้: ถ้าเป็น Overclock ให้เล่น Particle ---
+            if (overclockParticle != null && !overclockParticle.isPlaying)
+            {
+                overclockParticle.Play();
+            }
+            // ------------------------------------------------
+        }
+        else
+        {
+            buffTimer = buffDuration;
+        }
 
         if (!isBuffed)
         {
@@ -98,7 +119,7 @@ public class Tower : MonoBehaviour, IBuffable
             StartCoroutine(BuffFlashRoutine());
         }
 
-        Debug.Log("ป้อมได้รับบัฟ! ยิงรัวขึ้น 2 เท่า!");
+        Debug.Log("ป้อมได้รับบัฟ! เวลารวม: " + buffTimer + " วินาที");
     }
 
     private IEnumerator BuffFlashRoutine()

@@ -3,11 +3,11 @@
 public class PlayerCombat : MonoBehaviour
 {
     [Header("Stomp Settings")]
-    public Transform stompCheck;       // จุดที่ใช้เช็คการเหยียบ (ปลายเท้า)
-    public float stompRadius = 0.3f;   // รัศมีการเหยียบ
-    public LayerMask enemyLayer;       // เลเยอร์ของศัตรู
-    public int stompDamage = 10;       // ดาเมจที่ทำได้เมื่อเหยียบ
-    public float bounceForce = 15f;    // แรงเด้งหลังจากเหยียบโดน
+    public Transform stompCheck;
+    public float stompRadius = 0.3f;
+    public LayerMask enemyLayer;
+    public int stompDamage = 10;
+    public float bounceForce = 15f;
 
     private Rigidbody2D rb;
     private PlayerController controller;
@@ -20,8 +20,6 @@ public class PlayerCombat : MonoBehaviour
 
     void Update()
     {
-        // เงื่อนไข: เราจะทำดาเมจได้ก็ต่อเมื่อ "ตัวละครกำลังตกลงมา" (ความเร็วแกน Y ติดลบ) 
-        // ป้องกันบั๊กเวลาเรากระโดดเอาหัวไปโหม่งมอนสเตอร์จากด้านล่าง
         if (controller.isGroundPounding)
         {
             CheckStomp();
@@ -30,27 +28,34 @@ public class PlayerCombat : MonoBehaviour
 
     void CheckStomp()
     {
-        // สร้างวงกลมเช็คการชนกับเลเยอร์ Enemy
         Collider2D hit = Physics2D.OverlapCircle(stompCheck.position, stompRadius, enemyLayer);
 
         if (hit != null)
         {
             bool hitSomething = false;
 
-            // 1. เช็คก่อนว่าตัวที่เหยียบ มีสคริปต์เกราะหนามติดอยู่ไหม?
+            // 1. เช็คหนาม
             SpikeArmor spike = hit.GetComponent<SpikeArmor>();
             if (spike != null)
             {
-                // เหยียบโดนหนาม! ผู้เล่นโดนดาเมจเอง
-                IDamageable playerHealth = GetComponent<IDamageable>();
-                if (playerHealth != null)
+                // --- ส่วนที่แก้: เช็คบัฟ Spike Immune ---
+                if (EnchantManager.Instance != null && EnchantManager.Instance.hasSpikeImmune)
                 {
-                    playerHealth.TakeDamage(spike.recoilDamage);
-                    Debug.Log("โอ๊ย! เหยียบโดนตัวหนาม ผู้เล่นเสียเลือด!");
+                    Debug.Log("เหยียบหนาม แต่มี Spike Immune! ไม่เสียเลือดจ้า!");
                 }
-                hitSomething = true; // ให้เด้งออกเหมือนเดิม จะได้ไม่โดนซ้ำ
+                else
+                {
+                    IDamageable playerHealth = GetComponent<IDamageable>();
+                    if (playerHealth != null)
+                    {
+                        playerHealth.TakeDamage(spike.recoilDamage);
+                        Debug.Log("โอ๊ย! เหยียบโดนตัวหนาม ผู้เล่นเสียเลือด!");
+                    }
+                }
+                // ------------------------------------
+                hitSomething = true;
             }
-            // 2. ถ้าไม่มีหนาม ก็ทำดาเมจใส่มอนสเตอร์ตามปกติ (โค้ดเดิมของคุณ)
+            // 2. ถ้าไม่มีหนาม ทำดาเมจปกติ
             else
             {
                 IDamageable damageable = hit.GetComponent<IDamageable>();
@@ -61,7 +66,7 @@ public class PlayerCombat : MonoBehaviour
                 }
             }
 
-            // 3. เช็คว่าเหยียบป้อมไหม (โค้ดเดิมของคุณ)
+            // 3. เช็คเหยียบป้อม
             IBuffable buffable = hit.GetComponent<IBuffable>();
             if (buffable != null)
             {
@@ -69,7 +74,6 @@ public class PlayerCombat : MonoBehaviour
                 hitSomething = true;
             }
 
-            // ถ้าเหยียบโดนอะไรสักอย่าง ให้เด้ง
             if (hitSomething)
             {
                 Bounce();
@@ -80,12 +84,10 @@ public class PlayerCombat : MonoBehaviour
 
     void Bounce()
     {
-        // รีเซ็ตความเร็วแนวดิ่งเป็น 0 ก่อนเด้ง เพื่อให้การเด้งได้ความสูงเท่ากันทุกครั้ง
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0);
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, bounceForce);
     }
 
-    // วาดวงกลมสีเหลืองเพื่อให้เรากะระยะปลายเท้าได้ง่ายในหน้า Scene
     private void OnDrawGizmosSelected()
     {
         if (stompCheck != null)
