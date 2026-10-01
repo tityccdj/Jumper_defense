@@ -9,13 +9,27 @@ public class EnemyMovement : MonoBehaviour
     private float originalSpeed;
     private Coroutine slowCoroutine;
 
+    // --- เพิ่ม 2 ตัวแปรนี้ เพื่อจำชิ้นส่วนภาพและสีดั้งเดิม ---
+    private SpriteRenderer sr;
+    private Color originalColor;
+
+    [Header("Visual Effects")]
+    public ParticleSystem slowParticle; // ตัวแปรสำหรับใส่ Particle น้ำแข็ง
+
     void Start()
     {
         originalSpeed = moveSpeed;
         moveSpeed = moveSpeed + Random.Range(-0.3f, 0.3f);
         rb = GetComponent<Rigidbody2D>();
 
-        // 1. ให้ศัตรูมองหาวัตถุที่มี Tag ว่า "Base" ตั้งแต่ตอนเกิด
+        // 1. จำสีเดิมตั้งแต่ตอนเริ่มเกม
+        sr = GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            originalColor = sr.color;
+        }
+
+        // 2. ให้ศัตรูมองหาวัตถุที่มี Tag ว่า "Base" ตั้งแต่ตอนเกิด
         GameObject baseObj = GameObject.FindGameObjectWithTag("Base");
         if (baseObj != null)
         {
@@ -27,20 +41,16 @@ public class EnemyMovement : MonoBehaviour
     {
         if (targetBase != null)
         {
-            // 1. หาว่าระยะห่างแกน X ห่างกันเท่าไหร่
             float distanceX = targetBase.position.x - transform.position.x;
             float moveDirectionX = 0f;
 
-            // 2. ถ้าห่างกันมากกว่า 0.1 ค่อยเดิน (ป้องกันการสั่น)
             if (Mathf.Abs(distanceX) > 0.1f)
             {
                 moveDirectionX = Mathf.Sign(distanceX);
             }
 
-            // 3. เดินไปในทิศทางนั้น (ถ้าตรงกันแล้ว moveDirectionX จะเป็น 0 ทำให้ร่วงลงมาตรงๆ อย่างเดียว)
             rb.linearVelocity = new Vector2(moveDirectionX * moveSpeed, rb.linearVelocity.y);
 
-            // 4. หันหน้า
             if (moveDirectionX > 0)
             {
                 transform.localScale = new Vector3(-1, 1, 1);
@@ -55,7 +65,8 @@ public class EnemyMovement : MonoBehaviour
             rb.linearVelocity = new Vector2(-moveSpeed, rb.linearVelocity.y);
         }
     }
-        public void ApplySlow(float multiplier, float duration)
+
+    public void ApplySlow(float multiplier, float duration)
     {
         if (slowCoroutine != null) StopCoroutine(slowCoroutine);
         slowCoroutine = StartCoroutine(SlowRoutine(multiplier, duration));
@@ -65,12 +76,25 @@ public class EnemyMovement : MonoBehaviour
     {
         moveSpeed = originalSpeed * multiplier; // เดินช้าลง
 
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null) sr.color = new Color(0.5f, 0.8f, 1f); // ตัวฟ้าแข็ง
+        if (sr != null) sr.color = new Color(0.5f, 0.8f, 1f); // เปลี่ยนเป็นสีฟ้าแข็ง
+
+        // 1. สั่งเล่น Particle น้ำแข็ง
+        if (slowParticle != null)
+        {
+            slowParticle.Play();
+        }
 
         yield return new WaitForSeconds(duration);
 
         moveSpeed = originalSpeed; // คืนความเร็ว
-        if (sr != null) sr.color = Color.white;
+
+        // เปลี่ยนจาก Color.white เป็นสีที่จำไว้
+        if (sr != null) sr.color = originalColor;
+
+        // 2. สั่งหยุด Particle เมื่อหมดเวลา
+        if (slowParticle != null)
+        {
+            slowParticle.Stop();
+        }
     }
 }
