@@ -2,21 +2,19 @@
 using UnityEngine;
 using TMPro;
 
-// 1. สร้าง Class ใหม่สำหรับจัดกลุ่มศัตรู
 [System.Serializable]
 public class EnemyGroup
 {
-    public GameObject enemyPrefab;    // มอนสเตอร์ชนิดที่ต้องการ
-    public int enemyCount;            // จำนวนที่จะปล่อย
-    public float spawnInterval = 1f;  // ปล่อยห่างกันตัวละกี่วินาที
+    public GameObject enemyPrefab;
+    public int enemyCount;
+    public float spawnInterval = 1f;
 }
 
-// 2. แก้ไข Class Wave ให้เก็บข้อมูลเป็น Array ของ EnemyGroup แทน
 [System.Serializable]
 public class Wave
 {
     public string waveName;
-    public EnemyGroup[] enemyGroups;  // ใส่ศัตรูได้หลายชนิดใน 1 เวฟ!
+    public EnemyGroup[] enemyGroups;
 }
 
 public class WaveSpawner : MonoBehaviour
@@ -54,17 +52,34 @@ public class WaveSpawner : MonoBehaviour
         if (waveText != null) waveText.text = "Wave: " + (currentWaveIndex + 1);
         Debug.Log("กำลังเริ่มเวฟ: " + currentWave.waveName);
 
-        // --- ส่วนที่เปลี่ยนไป: วนลูป 2 ชั้น ---
-        // ชั้นที่ 1: วนลูปตามกลุ่มศัตรู (เช่น BaseEnemy, ตามด้วย RangerEnemy)
+        // --- เพิ่มเงื่อนไขกำหนดจุดเกิดตามเวฟ ---
+        int availableSpawners = 1; // ค่าเริ่มต้น ใช้แค่จุดเดียว
+
+        if (currentWaveIndex == 0 || currentWaveIndex == 1) // Wave 1-2 (Index 0, 1)
+        {
+            availableSpawners = 1; // ใช้แค่ Spawner 1
+        }
+        else if (currentWaveIndex == 2 || currentWaveIndex == 3) // Wave 3-4 (Index 2, 3)
+        {
+            availableSpawners = 2; // ใช้ Spawner 1-2
+        }
+        else if (currentWaveIndex >= 4) // Wave 5 ขึ้นไป (Index 4)
+        {
+            availableSpawners = 3; // ใช้ Spawner 1-3
+        }
+
+        // ป้องกัน Error ในกรณีที่เราลืมใส่ Spawn Points ในหน้า Inspector ให้ครบ
+        availableSpawners = Mathf.Min(availableSpawners, spawnPoints.Length);
+        // ------------------------------------
+
         foreach (EnemyGroup group in currentWave.enemyGroups)
         {
-            // ชั้นที่ 2: วนลูปปล่อยศัตรูตามจำนวนในกลุ่มนั้น
             for (int i = 0; i < group.enemyCount; i++)
             {
-                int randomIndex = Random.Range(0, spawnPoints.Length);
+                // สุ่มจุดเกิดจากจำนวนจุดที่อนุญาตในเวฟนั้นๆ
+                int randomIndex = Random.Range(0, availableSpawners);
                 Transform chosenSpawnPoint = spawnPoints[randomIndex];
 
-                // แอบใส่การสุ่มจุดเกิดนิดหน่อย กันศัตรูสิงร่างกัน
                 Vector3 randomOffset = new Vector3(Random.Range(-0.3f, 0.3f), Random.Range(-0.3f, 0.3f), 0);
                 Vector3 finalPosition = chosenSpawnPoint.position + randomOffset;
 
@@ -76,11 +91,9 @@ public class WaveSpawner : MonoBehaviour
                     scaling.ApplyScaling(currentWaveIndex);
                 }
 
-                // รอเวลาก่อนปล่อยตัวถัดไปในกลุ่ม
                 yield return new WaitForSeconds(group.spawnInterval);
             }
         }
-        // ------------------------------------
 
         isSpawning = false;
         Debug.Log("ปล่อยศัตรูครบแล้ว! รอผู้เล่นเคลียร์มอนสเตอร์...");

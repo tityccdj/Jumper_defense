@@ -41,7 +41,14 @@ public class PlayerCombat : MonoBehaviour
                 // --- ส่วนที่แก้: เช็คบัฟ Spike Immune ---
                 if (EnchantManager.Instance != null && EnchantManager.Instance.hasSpikeImmune)
                 {
-                    Debug.Log("เหยียบหนาม แต่มี Spike Immune! ไม่เสียเลือดจ้า!");
+                    Debug.Log("เหยียบหนาม แต่มี Spike Immune! ไม่เสียเลือดแถมเหยียบมันตายได้ด้วย!");
+
+                    // เพิ่มโค้ดส่วนนี้: ทำดาเมจใส่ตัวหนามเลย!
+                    IDamageable damageable = hit.GetComponent<IDamageable>();
+                    if (damageable != null)
+                    {
+                        damageable.TakeDamage(stompDamage);
+                    }
                 }
                 else
                 {

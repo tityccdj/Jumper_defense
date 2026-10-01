@@ -68,26 +68,26 @@ public class PlayerController : MonoBehaviour
             if (isGrounded)
             {
                 // กรณียืนอยู่บนพื้น -> กระโดดครั้งแรกตามปกติ
+                rb.gravityScale = originalGravity; // <--- เพิ่มบรรทัดนี้เพื่อปลดล็อกก่อนกระโดด
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             }
             else
             {
                 // กรณีอยู่กลางอากาศ -> ให้ความสำคัญกับ Ground Pound (Stomp) ก่อน!
-                // ถ้าผู้เล่นกดปุ่ม "ลง" ค้างไว้ (พยายามจะ Stomp)
                 if (Input.GetAxisRaw("Vertical") < 0 && !isGroundPounding)
                 {
-                    // เช็คว่าไม่ได้กำลังพุ่งขึ้นแรงๆ (เลยจุดสูงสุดมาระดับนึงแล้ว) ถึงจะเหยียบได้
                     if (rb.linearVelocity.y < 2f)
                     {
+                        rb.gravityScale = originalGravity; // <--- (เผื่อไว้) ปลดล็อกก่อนพุ่งเหยียบ
                         rb.linearVelocity = new Vector2(rb.linearVelocity.x, -groundPoundForce);
                         isGroundPounding = true;
                     }
                 }
-                // ถ้าไม่ได้กด "ลง" -> ค่อยทำ Double Jump
                 else if (canDoubleJump && EnchantManager.Instance != null && EnchantManager.Instance.hasDoubleJump)
                 {
+                    rb.gravityScale = originalGravity; // <--- ปลดล็อกก่อน Double Jump
                     rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-                    canDoubleJump = false; // ใช้โควต้า Double Jump ไปแล้ว
+                    canDoubleJump = false;
                     Debug.Log("ใช้งาน Double Jump!");
                 }
             }
@@ -107,7 +107,18 @@ public class PlayerController : MonoBehaviour
     {
         if (isDashing) return; // ถ้า Dash อยู่ไม่ต้องคำนวณแรงเดินปกติ
 
-        rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
+        // --- จุดที่แก้: เพิ่ม && rb.linearVelocity.y <= 0f ---
+        // แปลว่า: ถ้าแตะพื้น + ไม่ได้กดเดิน + ไม่ได้กำลังลอยขึ้น
+        if (isGrounded && horizontalInput == 0 && rb.linearVelocity.y <= 0f)
+        {
+            rb.gravityScale = 0f; // ปิดแรงโน้มถ่วงชั่วคราว
+            rb.linearVelocity = Vector2.zero; // บังคับหยุดนิ่งสนิท
+        }
+        else
+        {
+            rb.gravityScale = originalGravity; // คืนค่าแรงโน้มถ่วง
+            rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
+        }
     }
 
     // Coroutine สำหรับระบบ Dash
