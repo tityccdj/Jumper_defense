@@ -14,6 +14,12 @@ public class EnemyGroup
 public class Wave
 {
     public string waveName;
+
+    [Header("--- ข้อมูลคำนวณอัตโนมัติ (ห้ามแก้) ---")]
+    [Tooltip("รวมจำนวนมอนสเตอร์ทั้งหมดที่จะเกิดในเวฟนี้")]
+    public int totalEnemiesInWave; // จะโชว์ใน Inspector ไว้ดูยอดรวม
+
+    [Space(10)]
     public EnemyGroup[] enemyGroups;
 }
 
@@ -28,8 +34,30 @@ public class WaveSpawner : MonoBehaviour
     public TextMeshProUGUI waveText;
     public GameObject waveClearText;
 
-    private int currentWaveIndex = 0;
+    public int currentWaveIndex = 0;
     private bool isSpawning = false;
+
+    // ----------------------------------------------------
+    // ฟังก์ชันนี้จะทำงานอัตโนมัติทุกครั้งที่เราขยับเมาส์หรือพิมพ์ตัวเลขในหน้า Inspector
+    private void OnValidate()
+    {
+        if (waves != null)
+        {
+            foreach (Wave wave in waves)
+            {
+                int sum = 0;
+                if (wave.enemyGroups != null)
+                {
+                    foreach (EnemyGroup group in wave.enemyGroups)
+                    {
+                        sum += group.enemyCount;
+                    }
+                }
+                wave.totalEnemiesInWave = sum; // อัปเดตยอดรวมให้เราดูทันที
+            }
+        }
+    }
+    // ----------------------------------------------------
 
     void Start()
     {
@@ -53,22 +81,21 @@ public class WaveSpawner : MonoBehaviour
         Debug.Log("กำลังเริ่มเวฟ: " + currentWave.waveName);
 
         // --- เพิ่มเงื่อนไขกำหนดจุดเกิดตามเวฟ ---
-        int availableSpawners = 1; // ค่าเริ่มต้น ใช้แค่จุดเดียว
+        int availableSpawners = 1;
 
-        if (currentWaveIndex == 0 || currentWaveIndex == 1) // Wave 1-2 (Index 0, 1)
+        if (currentWaveIndex == 0)
         {
-            availableSpawners = 1; // ใช้แค่ Spawner 1
+            availableSpawners = 1;
         }
-        else if (currentWaveIndex == 2 || currentWaveIndex == 3) // Wave 3-4 (Index 2, 3)
+        else if (currentWaveIndex >= 1 && currentWaveIndex <= 3)
         {
-            availableSpawners = 2; // ใช้ Spawner 1-2
+            availableSpawners = 2;
         }
-        else if (currentWaveIndex >= 4) // Wave 5 ขึ้นไป (Index 4)
+        else if (currentWaveIndex >= 4)
         {
-            availableSpawners = 3; // ใช้ Spawner 1-3
+            availableSpawners = 3;
         }
 
-        // ป้องกัน Error ในกรณีที่เราลืมใส่ Spawn Points ในหน้า Inspector ให้ครบ
         availableSpawners = Mathf.Min(availableSpawners, spawnPoints.Length);
         // ------------------------------------
 
@@ -76,7 +103,6 @@ public class WaveSpawner : MonoBehaviour
         {
             for (int i = 0; i < group.enemyCount; i++)
             {
-                // สุ่มจุดเกิดจากจำนวนจุดที่อนุญาตในเวฟนั้นๆ
                 int randomIndex = Random.Range(0, availableSpawners);
                 Transform chosenSpawnPoint = spawnPoints[randomIndex];
 

@@ -73,12 +73,11 @@ public class RangerShooter : MonoBehaviour
             // 1. หาเวกเตอร์ทิศทางปกติ (เอาปลายทาง ลบ ต้นทาง)
             Vector2 direction = player.position - gunPivot.position;
 
-            // 2. *** ไม้ตายแก้บั๊กกระจกสะท้อน ***
-            // ถ้าตัวแม่หันไปทางซ้าย (Scale X ติดลบ) โลกของมันจะกลับด้าน
-            // เราจึงต้องคูณทิศทางด้วย -1 เพื่อให้ผลลัพธ์การหมุนกลับมาถูกต้องเป๊ะ!
+            // 2. *** ไม้ตายแก้บั๊กกระจกสะท้อน (อัปเกรด) ***
+            // กลับด้านแค่แกน X อย่างเดียว ห้ามกลับแกน Y เด็ดขาด!
             if (transform.localScale.x < 0)
             {
-                direction = -direction;
+                direction.x = -direction.x;
             }
 
             // 3. คำนวณองศาจาก direction ที่ปรับแก้แล้ว
@@ -89,7 +88,6 @@ public class RangerShooter : MonoBehaviour
             gunPivot.localRotation = Quaternion.RotateTowards(gunPivot.localRotation, targetRotation, turnSpeed * Time.deltaTime);
         }
     }
-
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;

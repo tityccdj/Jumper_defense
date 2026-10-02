@@ -471,7 +471,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseHP: 20
-  hpScalePerWave: 6
+  hpScalePerWave: 3
 --- !u!114 &2190830786454985455
 MonoBehaviour:
   m_ObjectHideFlags: 0

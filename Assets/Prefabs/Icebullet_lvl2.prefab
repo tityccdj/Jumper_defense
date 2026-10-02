@@ -136,7 +136,7 @@ MonoBehaviour:
   target: {fileID: 0}
   speed: 15
   damage: 8
-  isIceBullet: 0
+  isIceBullet: 1
   slowMultiplier: 0.5
   slowDuration: 2
 --- !u!61 &6636601012388622299

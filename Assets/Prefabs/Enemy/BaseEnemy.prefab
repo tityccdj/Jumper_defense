@@ -261,7 +261,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseHP: 12
-  hpScalePerWave: 4
+  hpScalePerWave: 2
 --- !u!1 &5142836614771801566
 GameObject:
   m_ObjectHideFlags: 0

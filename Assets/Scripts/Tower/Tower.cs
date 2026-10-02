@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Tower : MonoBehaviour, IBuffable
@@ -26,6 +27,8 @@ public class Tower : MonoBehaviour, IBuffable
     [Header("Upgrade Settings (ใช้ Shard)")]
     public GameObject upgradedTowerPrefab; // ใส่ Prefab ป้อมร่าง 2 ที่จะเอามาแทนที่
     public bool isMaxLevel = false;        // ถ้าเป็นร่าง 2 แล้วให้ติ๊กถูกอันนี้
+    [Header("UI & Indicators")]
+    public GameObject rangeIndicator; // ลากวงแหวนบอกระยะมาใส่ตรงนี้
     // ----------------------------------------
 
     private bool isBuffed = false;
@@ -39,7 +42,20 @@ public class Tower : MonoBehaviour, IBuffable
 
     [HideInInspector]
     public TowerNode myNode; // เอาไว้จำว่าป้อมนี้วางอยู่บน Node ไหน
-
+    private void OnMouseEnter()
+    {
+        if (rangeIndicator != null)
+        {
+            rangeIndicator.SetActive(true);
+        }
+    }
+    private void OnMouseExit()
+    {
+        if (rangeIndicator != null)
+        {
+            rangeIndicator.SetActive(false);
+        }
+    }
     private void OnMouseDown()
     {
         // ถ้าคลิกโดนตัวป้อมโดยตรง ให้ส่งเรื่องไปเปิดหน้าต่างอัปเกรดเลย!
@@ -50,8 +66,24 @@ public class Tower : MonoBehaviour, IBuffable
     }
     void Start()
     {
-        // 1. หาชิ้นส่วน Sprite ทั้งหมดและจำสีเดิมไว้ตั้งแต่เริ่มเกม
-        allSprites = GetComponentsInChildren<SpriteRenderer>();
+        if (rangeIndicator != null)
+        {
+            // คูณ 2 เพราะ attackRange คือรัศมี (Radius) แต่ Scale คือเส้นผ่านศูนย์กลาง
+            float scale = attackRange * 2f;
+            rangeIndicator.transform.localScale = new Vector3(scale, scale, 1f);
+            rangeIndicator.SetActive(false); // ซ่อนไว้ก่อนตอนเริ่มเกม
+        }
+
+        // --- อัปเดต: เก็บค่าสีเดิม โดยยกเว้นวงแหวนระยะ (จะได้ไม่กระพริบเหลืองไปด้วย) ---
+        List<SpriteRenderer> validSprites = new List<SpriteRenderer>();
+        foreach (SpriteRenderer sr in GetComponentsInChildren<SpriteRenderer>())
+        {
+            // ข้ามวงแหวนระยะไป ไม่ต้องเอามาเปลี่ยนสีตอนติดบัฟ
+            if (rangeIndicator != null && sr.gameObject == rangeIndicator) continue;
+            validSprites.Add(sr);
+        }
+
+        allSprites = validSprites.ToArray();
         originalColors = new Color[allSprites.Length];
 
         for (int i = 0; i < allSprites.Length; i++)
