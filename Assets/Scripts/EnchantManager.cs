@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI; // ต้องมีบรรทัดนี้เพื่อเข้าถึง Button
+using UnityEngine.UI;
 
 public class EnchantManager : MonoBehaviour
 {
@@ -24,7 +24,8 @@ public class EnchantManager : MonoBehaviour
         if (!hasSpikeImmune && GameManager.Instance.SpendShard(1))
         {
             hasSpikeImmune = true;
-            btn.interactable = false; // ปิดปุ่มไม่ให้กดซ้ำได้อีก
+            btn.interactable = false;
+            PlayUpgradeEffect(); // <--- สั่งเล่น Particle
             Debug.Log("ปลดล็อก: Spike Immune!");
         }
     }
@@ -36,6 +37,7 @@ public class EnchantManager : MonoBehaviour
         {
             hasDoubleJump = true;
             btn.interactable = false;
+            PlayUpgradeEffect(); // <--- สั่งเล่น Particle
             Debug.Log("ปลดล็อก: Double Jump!");
         }
     }
@@ -47,6 +49,7 @@ public class EnchantManager : MonoBehaviour
         {
             hasDash = true;
             btn.interactable = false;
+            PlayUpgradeEffect(); // <--- สั่งเล่น Particle
             Debug.Log("ปลดล็อก: Dash!");
         }
     }
@@ -58,6 +61,7 @@ public class EnchantManager : MonoBehaviour
         {
             hasTowerOverclock = true;
             btn.interactable = false;
+            PlayUpgradeEffect(); // <--- สั่งเล่น Particle
             Debug.Log("ปลดล็อก: Tower Overclock!");
         }
     }
@@ -65,16 +69,30 @@ public class EnchantManager : MonoBehaviour
     // 5. ซื้อ Full Heal Base (ฮีลฐาน)
     public void BuyFullHealBase()
     {
-        // อันนี้กดซ้ำได้ เลยไม่ต้องรับค่า Button มาเพื่อปิดปุ่ม
         if (GameManager.Instance.SpendShard(1))
         {
             if (UIManager.Instance.baseHealth != null)
             {
-                UIManager.Instance.baseHealth.Revive(); // ใช้ฟังก์ชัน Revive เดิมที่คุณมีเพื่อเติมเลือด
+                UIManager.Instance.baseHealth.Revive();
                 UIManager.Instance.UpdateBaseHealthUI();
+                PlayUpgradeEffect(); // <--- สั่งเล่น Particle ให้ผู้เล่นรู้ว่าซื้อสำเร็จแล้ว
                 Debug.Log("ฮีลฐานเต็มแล้ว!");
             }
             EventSystem.current.SetSelectedGameObject(null);
+        }
+    }
+
+    // --- ฟังก์ชันเสริมที่เพิ่มเข้ามาใหม่ ---
+    private void PlayUpgradeEffect()
+    {
+        if (ParticleManager.Instance != null)
+        {
+            // หาตัวผู้เล่นในฉากด้วย Tag แล้วแสดงเอฟเฟกต์ที่ตำแหน่งนั้น
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                ParticleManager.Instance.PlayPlayerUpgrade(player.transform.position);
+            }
         }
     }
 }

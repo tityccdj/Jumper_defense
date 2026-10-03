@@ -56,29 +56,37 @@ public class PlayerController : MonoBehaviour
 
         dashCooldownTimer -= Time.deltaTime;
 
+        // 1. เช็คพื้น (เฉพาะเลเยอร์ Ground)
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
-        // 2. เช็คการแตะพื้น
+        // 2. คืนสิทธิ์ Double Jump เมื่อแตะพื้น
         if (isGrounded && rb.linearVelocity.y >= -0.1f)
         {
-            // ถ้ากำลังพุ่งลงมาแล้วเท้าแตะพื้น
-            if (isGroundPounding)
-            {
-                isGroundPounding = false;
-
-                // สั่งหยุดเอฟเฟกต์ออร่าพุ่งลง
-                if (groundPoundParticle != null) groundPoundParticle.Stop();
-
-                // (แถม) เรียก Particle Manager ให้สร้างฝุ่นกระจายที่พื้น
-                if (ParticleManager.Instance != null)
-                {
-                    ParticleManager.Instance.PlayStompImpact(groundCheck.position);
-                }
-            }
-
             canDoubleJump = true;
         }
 
+        // 3. เงื่อนไขหยุด Ground Pound (แยกออกมาจาก isGrounded)
+        // ถ้ากำลังพุ่งลงมา แต่ความเร็วแกน Y ไม่ติดลบแล้ว (ชนพื้น, ชนศัตรู, หรือโดนขัดจังหวะ)
+        if (isGroundPounding && rb.linearVelocity.y >= -0.1f)
+        {
+            isGroundPounding = false;
+
+            if (groundPoundParticle != null) groundPoundParticle.Stop();
+
+            // ให้เกิดฝุ่น Stomp เฉพาะตอนที่ชน "พื้น" จริงๆ (ถ้าเหยียบศัตรูกลางอากาศจะได้ไม่มีฝุ่นลอย)
+            if (ParticleManager.Instance != null && isGrounded)
+            {
+                ParticleManager.Instance.PlayStompImpact(groundCheck.position);
+            }
+        }
+
+        // 4. [ระบบป้องกันบั๊ก] ถ้าสถานะพุ่งลงจบไปแล้ว (เช่น ถูกโค้ดโจมตีสั่งยกเลิก) แต่ Particle ยังเล่นอยู่ ให้บังคับปิด
+        if (!isGroundPounding && groundPoundParticle != null && groundPoundParticle.isPlaying)
+        {
+            groundPoundParticle.Stop();
+        }
+
+        // รับค่าเดิน
         horizontalInput = Input.GetAxisRaw("Horizontal");
         if (horizontalInput != 0)
         {
@@ -94,6 +102,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        // กระโดด และ พุ่งลงพื้น
         if (Input.GetButtonDown("Jump"))
         {
             if (isGrounded)
@@ -111,7 +120,6 @@ public class PlayerController : MonoBehaviour
                         rb.linearVelocity = new Vector2(rb.linearVelocity.x, -groundPoundForce);
                         isGroundPounding = true;
 
-                        // 3. เปิดใช้เอฟเฟกต์พุ่งลงพื้น
                         if (groundPoundParticle != null) groundPoundParticle.Play();
                     }
                 }
@@ -126,6 +134,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        // Dash
         if (Input.GetKeyDown(KeyCode.LeftShift) && dashCooldownTimer <= 0f)
         {
             if (EnchantManager.Instance != null && EnchantManager.Instance.hasDash)

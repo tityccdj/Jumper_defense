@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class UIManager : MonoBehaviour
 
     public TextMeshProUGUI baseHealthText;
     public HealthSystem baseHealth;   // โยงไปหาเลือดฐาน
+    public Slider baseHealthSlider;
 
     [Header("Shop UI")]
     public GameObject shopUI;
@@ -45,6 +47,15 @@ public class UIManager : MonoBehaviour
         // อัปเดตเลือดครั้งแรกตอนเริ่มเกม
         UpdatePlayerHealthUI();
         UpdateBaseHealthUI();
+        if (baseHealthSlider != null && baseHealth != null)
+        {
+            // สมมติว่าใน HealthSystem มีตัวแปรชื่อ maxHealth 
+            // baseHealthSlider.maxValue = baseHealth.maxHealth; 
+
+            // ปรับค่าเริ่มต้นของหลอดให้เต็ม
+            baseHealthSlider.maxValue = baseHealth.GetCurrentHealth();
+            baseHealthSlider.value = baseHealth.GetCurrentHealth();
+        }
     }
 
     public void UpdateCoinUI(int coins)
@@ -66,6 +77,14 @@ public class UIManager : MonoBehaviour
         if (baseHealthText != null && baseHealth != null)
         {
             baseHealthText.text = "Base HP: " + baseHealth.GetCurrentHealth();
+        }
+        if (baseHealthSlider != null && baseHealth != null)
+        {
+            // สมมติว่าใน HealthSystem มีตัวแปรชื่อ maxHealth 
+            // baseHealthSlider.maxValue = baseHealth.maxHealth; 
+
+            // ปรับค่าเริ่มต้นของหลอดให้เต็ม
+            baseHealthSlider.value = baseHealth.GetCurrentHealth();
         }
     }
 

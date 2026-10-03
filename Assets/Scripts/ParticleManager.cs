@@ -9,6 +9,7 @@ public class ParticleManager : MonoBehaviour
     public GameObject stompImpactPrefab; // ฝุ่นตอนพุ่งกระทืบพื้น
     public GameObject dashEffectPrefab;  // เอฟเฟกต์ตอนพุ่ง Dash
     public GameObject doubleJumpPrefab;  // เมฆเล็กๆ ตอนกระโดด 2 ชั้น
+    public GameObject playerUpgradePrefab; // <--- 1. เพิ่มช่องสำหรับเอฟเฟกต์ตอนผู้เล่นอัปเกรดสกิล
 
     [Header("Enemy Effects")]
     public GameObject enemyHitPrefab;    // เลือดกระจาย หรือประกายไฟตอนโดนตี
@@ -60,6 +61,12 @@ public class ParticleManager : MonoBehaviour
     public void PlayDoubleJumpEffect(Vector3 position)
     {
         SpawnParticle(doubleJumpPrefab, position, 1f);
+    }
+
+    // <--- 2. เพิ่มฟังก์ชันนี้สำหรับเรียกใช้ตอนซื้ออัปเกรดสำเร็จ --->
+    public void PlayPlayerUpgrade(Vector3 position)
+    {
+        SpawnParticle(playerUpgradePrefab, position, 3f);
     }
 
     public void PlayEnemyHit(Vector3 position)

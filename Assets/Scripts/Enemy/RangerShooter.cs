@@ -15,7 +15,7 @@ public class RangerShooter : MonoBehaviour
     private Transform player;
     private float nextFireTime;
     private MonoBehaviour moveScript;
-    private Rigidbody2D rb; // --- เพิ่มตัวแปรเบรก ---
+    private Rigidbody2D rb;
 
     void Start()
     {
@@ -23,7 +23,7 @@ public class RangerShooter : MonoBehaviour
         if (p != null) player = p.transform;
 
         moveScript = GetComponent("EnemyMovement") as MonoBehaviour;
-        rb = GetComponent<Rigidbody2D>(); // --- ดึง Rigidbody มาใช้เบรก ---
+        rb = GetComponent<Rigidbody2D>();
     }
 
     void Update()
@@ -40,25 +40,35 @@ public class RangerShooter : MonoBehaviour
 
         if (distance <= attackRange)
         {
-            // --- ถ้าระยะถึง และกำลังเดินอยู่ ให้สั่งปิดสคริปต์เดิน + เหยียบเบรก! ---
+            // ถ้าระยะถึง และกำลังเดินอยู่ ให้สั่งปิดสคริปต์เดิน + เหยียบเบรก
             if (moveScript != null && moveScript.enabled == true)
             {
                 moveScript.enabled = false;
-
-                // สั่งเบรกแกน X ให้เป็น 0 (ส่วนแกน Y ปล่อยให้ตกลงตามแรงโน้มถ่วงปกติ)
                 if (rb != null) rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
             }
 
             // ยิง
             if (Time.time >= nextFireTime)
             {
-                Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+                // ---------------------------------------------------------
+                // --- วิธีแก้บั๊กกระสุนยิงกลับหลัง ---
+                // 1. หาเวกเตอร์ทิศทางจาก 'โคนปืน' พุ่งไปหา 'ปลายกระบอกปืน'
+                Vector2 actualShootDir = firePoint.position - gunPivot.position;
+
+                // 2. แปลงเวกเตอร์นั้นเป็นองศาที่ถูกต้อง 100% ตามภาพที่เห็น
+                float shootAngle = Mathf.Atan2(actualShootDir.y, actualShootDir.x) * Mathf.Rad2Deg;
+                Quaternion correctRotation = Quaternion.Euler(0, 0, shootAngle);
+
+                // 3. สั่งยิงโดยใช้องศาที่คำนวณใหม่แทน firePoint.rotation เดิม
+                Instantiate(bulletPrefab, firePoint.position, correctRotation);
+                // ---------------------------------------------------------
+
                 nextFireTime = Time.time + fireRate;
             }
         }
         else
         {
-            // --- ถ้านอกระยะ ให้เปิดสคริปต์กลับมาเดินต่อ ---
+            // ถ้านอกระยะ ให้เปิดสคริปต์กลับมาเดินต่อ
             if (moveScript != null && moveScript.enabled == false)
             {
                 moveScript.enabled = true;
@@ -70,24 +80,21 @@ public class RangerShooter : MonoBehaviour
     {
         if (gunPivot != null && player != null)
         {
-            // 1. หาเวกเตอร์ทิศทางปกติ (เอาปลายทาง ลบ ต้นทาง)
             Vector2 direction = player.position - gunPivot.position;
 
-            // 2. *** ไม้ตายแก้บั๊กกระจกสะท้อน (อัปเกรด) ***
-            // กลับด้านแค่แกน X อย่างเดียว ห้ามกลับแกน Y เด็ดขาด!
+            // ไม้ตายแก้บั๊กกระจกสะท้อน (เพื่อให้สไปรต์ปืนไม่กลับหัว)
             if (transform.localScale.x < 0)
             {
                 direction.x = -direction.x;
             }
 
-            // 3. คำนวณองศาจาก direction ที่ปรับแก้แล้ว
             float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
             Quaternion targetRotation = Quaternion.Euler(0, 0, targetAngle);
 
-            // 4. สั่งหมุนแบบ localRotation (หมุนเทียบกับตัวแม่)
             gunPivot.localRotation = Quaternion.RotateTowards(gunPivot.localRotation, targetRotation, turnSpeed * Time.deltaTime);
         }
     }
+
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;

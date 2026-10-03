@@ -53,7 +53,7 @@ public class ShopManager : MonoBehaviour
     // --- ระบบซื้อและอัปเกรด (คุยกับ GameManager เพื่อหักเงิน) ---
     public void BuyNormalTower()
     {
-        if (GameManager.Instance.SpendCoin(10)) // ขอหักเงินจาก GameManager
+        if (GameManager.Instance.SpendCoin(10))
         {
             selectedNode.BuildTower(normalTowerPrefab);
             CloseShop();
@@ -73,7 +73,7 @@ public class ShopManager : MonoBehaviour
     {
         if (selectedNode != null && selectedNode.currentTower != null)
         {
-            // เช็คว่าป้อมนี้ตันหรือยัง
+            // เช็คว่าป้อมนี้ตันหรือยัง (ถ้าเปลี่ยนไปใช้ Scriptable Object แล้ว อาจจะต้องแก้เป็น selectedNode.currentTower.towerData.isMaxLevel นะครับ)
             if (selectedNode.currentTower.isMaxLevel)
             {
                 Debug.Log("ป้อมนี้ตันแล้วจ้า!");
@@ -83,6 +83,13 @@ public class ShopManager : MonoBehaviour
             // ถ้ามี Shard พอ ให้สั่ง Node ทำการสลับร่างป้อม!
             if (GameManager.Instance.SpendShard(1))
             {
+                // <--- สั่งเล่นเอฟเฟกต์อัปเกรดป้อมตรงนี้ --->
+                if (ParticleManager.Instance != null)
+                {
+                    // แสดงเอฟเฟกต์ที่ตำแหน่งของฐานป้อม
+                    ParticleManager.Instance.PlayTowerUpgrade(selectedNode.transform.position);
+                }
+
                 selectedNode.ReplaceWithUpgradedTower();
                 CloseShop();
             }
