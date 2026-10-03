@@ -87,11 +87,11 @@ public class WaveSpawner : MonoBehaviour
         {
             availableSpawners = 1;
         }
-        else if (currentWaveIndex >= 1 && currentWaveIndex <= 3)
+        else if (currentWaveIndex >= 1 && currentWaveIndex <= 2)
         {
             availableSpawners = 2;
         }
-        else if (currentWaveIndex >= 4)
+        else if (currentWaveIndex >= 3)
         {
             availableSpawners = 3;
         }

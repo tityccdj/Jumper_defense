@@ -1,8 +1,12 @@
 ﻿using UnityEngine;
-using System.Collections; // เพิ่มเพื่อให้ใช้ Coroutine ได้
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Animation")]
+    public Animator anim;
+    private SpriteRenderer[] allSprites;
+
     [Header("Movement Settings")]
     public float moveSpeed = 8f;
     public float jumpForce = 12f;
@@ -21,79 +25,107 @@ public class PlayerController : MonoBehaviour
     [Header("Jump Feel")]
     public float fallMultiplier = 2.5f;
 
+    [Header("Attached Particles")]
+    public ParticleSystem dashParticle;
+    public ParticleSystem doubleJumpParticle;
+    public ParticleSystem groundPoundParticle; // <--- 1. เพิ่มช่องสำหรับเอฟเฟกต์ตอนพุ่งลงพื้น
+
     private Rigidbody2D rb;
     private float horizontalInput;
     private bool isGrounded;
 
     [HideInInspector] public bool isGroundPounding = false;
 
-    // ตัวแปรสำหรับระบบใหม่
     private bool canDoubleJump = false;
     private bool isDashing = false;
     private float dashCooldownTimer = 0f;
     private float originalGravity;
-    private float lastFacingDirection = 1f; // จำว่าหันหน้าไปทางไหน (1=ขวา, -1=ซ้าย)
+    private float lastFacingDirection = 1f;
 
     void Start()
     {
+        if (anim == null) anim = GetComponent<Animator>();
+        allSprites = GetComponentsInChildren<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
-        originalGravity = rb.gravityScale; // จำค่า Gravity เดิมไว้ใช้หลัง Dash เสร็จ
+        originalGravity = rb.gravityScale;
     }
 
     void Update()
     {
-        // ถ้ากำลัง Dash อยู่ จะไม่รับคำสั่งอื่นเลย
         if (isDashing) return;
 
         dashCooldownTimer -= Time.deltaTime;
 
-        // 1. เช็คพื้น
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+
+        // 2. เช็คการแตะพื้น
         if (isGrounded && rb.linearVelocity.y >= -0.1f)
         {
-            isGroundPounding = false;
-            canDoubleJump = true; // รีเซ็ตให้กลับมากระโดด 2 ชั้นได้อีกเมื่อเหยียบพื้น
+            // ถ้ากำลังพุ่งลงมาแล้วเท้าแตะพื้น
+            if (isGroundPounding)
+            {
+                isGroundPounding = false;
+
+                // สั่งหยุดเอฟเฟกต์ออร่าพุ่งลง
+                if (groundPoundParticle != null) groundPoundParticle.Stop();
+
+                // (แถม) เรียก Particle Manager ให้สร้างฝุ่นกระจายที่พื้น
+                if (ParticleManager.Instance != null)
+                {
+                    ParticleManager.Instance.PlayStompImpact(groundCheck.position);
+                }
+            }
+
+            canDoubleJump = true;
         }
 
-        // 2. รับค่าเดิน และจำทิศทาง (ใช้เวลา Dash)
         horizontalInput = Input.GetAxisRaw("Horizontal");
         if (horizontalInput != 0)
         {
             lastFacingDirection = Mathf.Sign(horizontalInput);
+
+            if (horizontalInput > 0)
+            {
+                transform.localScale = new Vector3(1, 1, 1);
+            }
+            else if (horizontalInput < 0)
+            {
+                transform.localScale = new Vector3(-1, 1, 1);
+            }
         }
 
-        // 3. กระโดด และ Double Jump
         if (Input.GetButtonDown("Jump"))
         {
             if (isGrounded)
             {
-                // กรณียืนอยู่บนพื้น -> กระโดดครั้งแรกตามปกติ
-                rb.gravityScale = originalGravity; // <--- เพิ่มบรรทัดนี้เพื่อปลดล็อกก่อนกระโดด
+                rb.gravityScale = originalGravity;
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             }
             else
             {
-                // กรณีอยู่กลางอากาศ -> ให้ความสำคัญกับ Ground Pound (Stomp) ก่อน!
                 if (Input.GetAxisRaw("Vertical") < 0 && !isGroundPounding)
                 {
                     if (rb.linearVelocity.y < 2f)
                     {
-                        rb.gravityScale = originalGravity; // <--- (เผื่อไว้) ปลดล็อกก่อนพุ่งเหยียบ
+                        rb.gravityScale = originalGravity;
                         rb.linearVelocity = new Vector2(rb.linearVelocity.x, -groundPoundForce);
                         isGroundPounding = true;
+
+                        // 3. เปิดใช้เอฟเฟกต์พุ่งลงพื้น
+                        if (groundPoundParticle != null) groundPoundParticle.Play();
                     }
                 }
                 else if (canDoubleJump && EnchantManager.Instance != null && EnchantManager.Instance.hasDoubleJump)
                 {
-                    rb.gravityScale = originalGravity; // <--- ปลดล็อกก่อน Double Jump
+                    rb.gravityScale = originalGravity;
                     rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
                     canDoubleJump = false;
-                    Debug.Log("ใช้งาน Double Jump!");
+
+                    if (doubleJumpParticle != null) doubleJumpParticle.Play();
                 }
             }
         }
 
-        // 5. Dash (กดปุ่ม Left Shift เพื่อพุ่งตัว)
         if (Input.GetKeyDown(KeyCode.LeftShift) && dashCooldownTimer <= 0f)
         {
             if (EnchantManager.Instance != null && EnchantManager.Instance.hasDash)
@@ -101,43 +133,61 @@ public class PlayerController : MonoBehaviour
                 StartCoroutine(DashRoutine());
             }
         }
+
+        UpdateAnimations();
+    }
+
+    private void UpdateAnimations()
+    {
+        if (anim == null) return;
+        anim.SetFloat("Speed", Mathf.Abs(horizontalInput));
+        anim.SetBool("IsGrounded", isGrounded);
+        anim.SetFloat("VelocityY", rb.linearVelocity.y);
+        anim.SetBool("IsGroundPounding", isGroundPounding);
+        anim.SetBool("IsDashing", isDashing);
     }
 
     void FixedUpdate()
     {
-        if (isDashing) return; // ถ้า Dash อยู่ไม่ต้องคำนวณแรงเดินปกติ
+        if (isDashing) return;
 
-        // --- จุดที่แก้: เพิ่ม && rb.linearVelocity.y <= 0f ---
-        // แปลว่า: ถ้าแตะพื้น + ไม่ได้กดเดิน + ไม่ได้กำลังลอยขึ้น
         if (isGrounded && horizontalInput == 0 && rb.linearVelocity.y <= 0f)
         {
-            rb.gravityScale = 0f; // ปิดแรงโน้มถ่วงชั่วคราว
-            rb.linearVelocity = Vector2.zero; // บังคับหยุดนิ่งสนิท
+            rb.gravityScale = 0f;
+            rb.linearVelocity = Vector2.zero;
         }
         else
         {
-            rb.gravityScale = originalGravity; // คืนค่าแรงโน้มถ่วง
+            rb.gravityScale = originalGravity;
             rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
         }
     }
 
-    // Coroutine สำหรับระบบ Dash
     private IEnumerator DashRoutine()
     {
         isDashing = true;
-        isGroundPounding = false; // ยกเลิกสถานะพุ่งลงพื้นเผื่อกดผิด
         dashCooldownTimer = dashCooldown;
 
-        // ปิดแรงโน้มถ่วงชั่วคราว ให้พุ่งเป็นเส้นตรง
+        // ถ้ากำลังพุ่งลงพื้นอยู่ แล้วกด Dash กลางอากาศ ให้ปิด Particle พุ่งลงด้วย
+        if (isGroundPounding)
+        {
+            isGroundPounding = false;
+            if (groundPoundParticle != null) groundPoundParticle.Stop();
+        }
+
+        if (dashParticle != null) dashParticle.Play();
+
         rb.gravityScale = 0f;
         rb.linearVelocity = new Vector2(lastFacingDirection * dashSpeed, 0f);
 
         yield return new WaitForSeconds(dashDuration);
 
-        // คืนค่าแรงโน้มถ่วง และหยุดพุ่ง
         rb.gravityScale = originalGravity;
         isDashing = false;
         rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+
+        if (dashParticle != null) dashParticle.Stop();
+
         Debug.Log("Dash เสร็จสิ้น!");
     }
 
