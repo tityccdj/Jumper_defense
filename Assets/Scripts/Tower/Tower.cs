@@ -7,6 +7,7 @@ public class Tower : MonoBehaviour, IBuffable
     [Header("Tower Settings")]
     public float attackRange = 5f;
     public float fireRate = 1f;
+    public int sellValue = 5;
     public LayerMask enemyLayer;
 
     [Header("Rotation Setup")]

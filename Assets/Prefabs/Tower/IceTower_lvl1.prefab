@@ -226,6 +226,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackRange: 5
   fireRate: 0.5
+  sellValue: 7
   enemyLayer:
     serializedVersion: 2
     m_Bits: 128

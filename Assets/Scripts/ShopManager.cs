@@ -99,4 +99,15 @@ public class ShopManager : MonoBehaviour
             }
         }
     }
+    public void SellSelectedTower()
+    {
+        if (selectedNode != null && selectedNode.currentTower != null)
+        {
+            // สั่งให้ Node นั้นทำการขายป้อม
+            selectedNode.SellTower();
+
+            // ปิดหน้าต่าง Shop และให้เวลาเดินต่อ
+            CloseShop();
+        }
+    }
 }

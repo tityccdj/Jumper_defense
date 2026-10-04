@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
     public float jumpForce = 12f;
     public float groundPoundForce = 20f;
 
-    [Header("Dash Settings (ใหม่)")]
+    [Header("Dash Settings")]
     public float dashSpeed = 20f;
     public float dashDuration = 0.2f;
     public float dashCooldown = 1f;
@@ -28,8 +28,18 @@ public class PlayerController : MonoBehaviour
     [Header("Attached Particles")]
     public ParticleSystem dashParticle;
     public ParticleSystem doubleJumpParticle;
-    public ParticleSystem groundPoundParticle; // <--- 1. เพิ่มช่องสำหรับเอฟเฟกต์ตอนพุ่งลงพื้น
+    public ParticleSystem groundPoundParticle;
     public GameObject playerDeathPrefab;
+
+    [Header("Ground Pound Settings")]
+    [Tooltip("เวลาหน่วง (วินาที) ก่อนที่เอฟเฟกต์พุ่งลงพื้นจะแสดง")]
+    public float particleDelay = 0.15f;
+    [Tooltip("เวลาหน่วง (วินาที) ที่เอฟเฟกต์จะค้างอยู่หลังจากแตะพื้นแล้ว")]
+    public float particleStopDelay = 0.2f; // <--- เพิ่มตัวแปรหน่วงเวลาตอนหยุด
+
+    private float groundPoundTimer = 0f;
+    private bool hasPlayedGPEffect = false;
+    private Coroutine stopParticleCoroutine; // <--- เก็บสถานะการนับเวลาปิด
 
     private Rigidbody2D rb;
     private float horizontalInput;
@@ -42,7 +52,7 @@ public class PlayerController : MonoBehaviour
     private float dashCooldownTimer = 0f;
     private float originalGravity;
     private float lastFacingDirection = 1f;
- 
+
     public void SpawnPlayerDeathParticle()
     {
         if (ParticleManager.Instance != null)
@@ -50,6 +60,7 @@ public class PlayerController : MonoBehaviour
             ParticleManager.Instance.PlayPlayerDeath(transform.position);
         }
     }
+
     void Start()
     {
         if (anim == null) anim = GetComponent<Animator>();
@@ -73,25 +84,33 @@ public class PlayerController : MonoBehaviour
             canDoubleJump = true;
         }
 
-        // 3. เงื่อนไขหยุด Ground Pound (แยกออกมาจาก isGrounded)
-        // ถ้ากำลังพุ่งลงมา แต่ความเร็วแกน Y ไม่ติดลบแล้ว (ชนพื้น, ชนศัตรู, หรือโดนขัดจังหวะ)
-        if (isGroundPounding && rb.linearVelocity.y >= -0.1f)
+        // จับเวลาเริ่ม Ground Pound
+        if (isGroundPounding)
+        {
+            groundPoundTimer += Time.deltaTime;
+            if (groundPoundTimer >= particleDelay && !hasPlayedGPEffect)
+            {
+                if (groundPoundParticle != null) groundPoundParticle.Play();
+                hasPlayedGPEffect = true;
+            }
+        }
+
+        // 3. เงื่อนไขหยุด Ground Pound
+        if (isGroundPounding && (isGrounded || rb.linearVelocity.y >= -0.1f))
         {
             isGroundPounding = false;
 
-            if (groundPoundParticle != null) groundPoundParticle.Stop();
+            // แทนที่จะปิดทันที ให้สั่งหน่วงเวลาปิดผ่าน Coroutine
+            if (groundPoundParticle != null)
+            {
+                if (stopParticleCoroutine != null) StopCoroutine(stopParticleCoroutine);
+                stopParticleCoroutine = StartCoroutine(StopParticleDelayed());
+            }
 
-            // ให้เกิดฝุ่น Stomp เฉพาะตอนที่ชน "พื้น" จริงๆ (ถ้าเหยียบศัตรูกลางอากาศจะได้ไม่มีฝุ่นลอย)
             if (ParticleManager.Instance != null && isGrounded)
             {
                 ParticleManager.Instance.PlayStompImpact(groundCheck.position);
             }
-        }
-
-        // 4. [ระบบป้องกันบั๊ก] ถ้าสถานะพุ่งลงจบไปแล้ว (เช่น ถูกโค้ดโจมตีสั่งยกเลิก) แต่ Particle ยังเล่นอยู่ ให้บังคับปิด
-        if (!isGroundPounding && groundPoundParticle != null && groundPoundParticle.isPlaying)
-        {
-            groundPoundParticle.Stop();
         }
 
         // รับค่าเดิน
@@ -128,7 +147,19 @@ public class PlayerController : MonoBehaviour
                         rb.linearVelocity = new Vector2(rb.linearVelocity.x, -groundPoundForce);
                         isGroundPounding = true;
 
-                        if (groundPoundParticle != null) groundPoundParticle.Play();
+                        groundPoundTimer = 0f;
+                        hasPlayedGPEffect = false;
+
+                        // ถ้าระบบกำลังนับเวลาปิด Particle ของรอบที่แล้วอยู่ ให้ยกเลิกการปิดไปเลย
+                        if (stopParticleCoroutine != null)
+                        {
+                            StopCoroutine(stopParticleCoroutine);
+                            stopParticleCoroutine = null;
+                        }
+                        if (groundPoundParticle != null)
+                        {
+                            groundPoundParticle.Stop();
+                        }
                     }
                 }
                 else if (canDoubleJump && EnchantManager.Instance != null && EnchantManager.Instance.hasDoubleJump)
@@ -185,10 +216,10 @@ public class PlayerController : MonoBehaviour
         isDashing = true;
         dashCooldownTimer = dashCooldown;
 
-        // ถ้ากำลังพุ่งลงพื้นอยู่ แล้วกด Dash กลางอากาศ ให้ปิด Particle พุ่งลงด้วย
         if (isGroundPounding)
         {
             isGroundPounding = false;
+            // ถ้า Dash กลางอากาศ ให้ปิดเอฟเฟกต์ทันที ไม่ต้องรอดีเลย์
             if (groundPoundParticle != null) groundPoundParticle.Stop();
         }
 
@@ -204,8 +235,16 @@ public class PlayerController : MonoBehaviour
         rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
 
         if (dashParticle != null) dashParticle.Stop();
+    }
 
-        Debug.Log("Dash เสร็จสิ้น!");
+    // --- ฟังก์ชัน Coroutine สำหรับนับเวลาถอยหลังปิดเอฟเฟกต์ ---
+    private IEnumerator StopParticleDelayed()
+    {
+        yield return new WaitForSeconds(particleStopDelay);
+        if (groundPoundParticle != null)
+        {
+            groundPoundParticle.Stop();
+        }
     }
 
     private void OnDrawGizmosSelected()

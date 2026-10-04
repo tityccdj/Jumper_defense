@@ -46,4 +46,34 @@ public class TowerNode : MonoBehaviour
             currentTower.myNode = this; // บอกป้อมใหม่ว่ายืนอยู่บนฐานนี้นะ
         }
     }
+    public void SellTower()
+    {
+        if (currentTower != null)
+        {
+            // 1. คืนเงินให้ผู้เล่น
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.AddCoin(currentTower.sellValue);
+            }
+
+            // ----------------------------------------------------
+            // เอาบรรทัดนี้ออกครับ เอฟเฟกต์อัปเกรดจะได้ไม่โผล่ตอนขาย
+            /* 
+            if (ParticleManager.Instance != null)
+            {
+                ParticleManager.Instance.PlayTowerUpgrade(transform.position); 
+            }
+            */
+            // (ถ้าคุณทำเอฟเฟกต์ควันตอนขายป้อมไว้ต่างหาก ค่อยเอามาใส่ตรงนี้แทนครับ)
+            // ----------------------------------------------------
+
+            // 2. ทำลายป้อมทิ้ง
+            Destroy(currentTower.gameObject);
+            currentTower = null;
+
+            // 3. เปิดการแสดงผล Sprite ของฐานให้กลับมามองเห็นอีกครั้ง
+            SpriteRenderer sr = GetComponent<SpriteRenderer>();
+            if (sr != null) sr.enabled = true;
+        }
+    }
 }
