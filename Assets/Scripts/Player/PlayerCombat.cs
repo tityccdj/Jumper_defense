@@ -4,8 +4,11 @@ public class PlayerCombat : MonoBehaviour
 {
     [Header("Stomp Settings")]
     public Transform stompCheck;
-    public float stompRadius = 0.3f;
-    public LayerMask enemyLayer;
+    public float stompRadius = 0.4f; // ขยายรัศมีอีกนิดให้โดนง่ายขึ้น
+
+    [Tooltip("ใส่ Layer ของศัตรูและป้อม (ติ๊กถูกทั้งคู่)")]
+    public LayerMask targetLayer; // <--- เปลี่ยนชื่อจาก enemyLayer เป็น targetLayer
+
     public int stompDamage = 10;
     public float bounceForce = 15f;
 
@@ -26,41 +29,35 @@ public class PlayerCombat : MonoBehaviour
         }
     }
 
-    void CheckStomp()
+    // เปลี่ยนเป็น public เพื่อให้ Controller เรียกใช้ฉุกเฉินได้
+    public void CheckStomp()
     {
-        Collider2D hit = Physics2D.OverlapCircle(stompCheck.position, stompRadius, enemyLayer);
+        // ใช้ OverlapCircleAll เพื่อกวาดหา "ทุกอย่าง" ในรัศมี (แก้ปัญหาศัตรูซ้อนกับป้อม)
+        Collider2D[] hits = Physics2D.OverlapCircleAll(stompCheck.position, stompRadius, targetLayer);
 
-        if (hit != null)
+        bool hitSomething = false;
+
+        foreach (Collider2D hit in hits)
         {
-            bool hitSomething = false;
-
             // 1. เช็คหนาม
             SpikeArmor spike = hit.GetComponent<SpikeArmor>();
             if (spike != null)
             {
                 if (EnchantManager.Instance != null && EnchantManager.Instance.hasSpikeImmune)
                 {
-                    Debug.Log("เหยียบหนาม แต่มี Spike Immune! ไม่เสียเลือดแถมเหยียบมันตายได้ด้วย!");
                     IDamageable damageable = hit.GetComponent<IDamageable>();
-                    if (damageable != null)
-                    {
-                        damageable.TakeDamage(stompDamage);
-                    }
+                    if (damageable != null) damageable.TakeDamage(stompDamage);
                 }
                 else
                 {
                     IDamageable playerHealth = GetComponent<IDamageable>();
-                    if (playerHealth != null)
-                    {
-                        playerHealth.TakeDamage(spike.recoilDamage);
-                        Debug.Log("โอ๊ย! เหยียบโดนตัวหนาม ผู้เล่นเสียเลือด!");
-                    }
+                    if (playerHealth != null) playerHealth.TakeDamage(spike.recoilDamage);
                 }
                 hitSomething = true;
             }
-            // 2. ถ้าไม่มีหนาม ทำดาเมจปกติ
             else
             {
+                // 2. ถ้าไม่มีหนาม ทำดาเมจปกติ
                 IDamageable damageable = hit.GetComponent<IDamageable>();
                 if (damageable != null)
                 {
@@ -76,19 +73,18 @@ public class PlayerCombat : MonoBehaviour
                 buffable.ApplyBuff();
                 hitSomething = true;
             }
+        }
 
-            // --- ถ้าเหยียบโดนอะไรสักอย่างให้ทำสิ่งนี้ ---
-            if (hitSomething)
+        // --- ถ้าเหยียบโดนอะไรสักอย่างให้ทำสิ่งนี้ ---
+        if (hitSomething)
+        {
+            if (ParticleManager.Instance != null)
             {
-                // สั่งเล่น Particle ตรงตำแหน่งของศัตรู/ป้อม ที่ถูกเหยียบ
-                if (ParticleManager.Instance != null)
-                {
-                    ParticleManager.Instance.PlayStompImpact(stompCheck.position);
-                }
-
-                Bounce();
-                controller.isGroundPounding = false;
+                ParticleManager.Instance.PlayStompImpact(stompCheck.position);
             }
+
+            Bounce();
+            controller.isGroundPounding = false;
         }
     }
 
@@ -97,7 +93,6 @@ public class PlayerCombat : MonoBehaviour
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0);
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, bounceForce);
     }
-
 
     private void OnDrawGizmosSelected()
     {
