@@ -42,7 +42,6 @@ public class HealthSystem : MonoBehaviour, IDamageable
         onTakeDamage?.Invoke();
         if (currentHealth <= 0)
         {
-            onDie.Invoke();
             Die();
         }
         else if (hasInvincibility && gameObject.activeInHierarchy)
@@ -84,7 +83,14 @@ public class HealthSystem : MonoBehaviour, IDamageable
 
         isInvincible = false;
     }
-
+    // ฟังก์ชันนี้สำหรับเรียกใช้ผ่าน Unity Event ใน Inspector
+    public void SpawnEnemyDeathParticle()
+    {
+        if (ParticleManager.Instance != null)
+        {
+            ParticleManager.Instance.PlayEnemyDeath(transform.position);
+        }
+    }
     private void Die()
     {
         onDie?.Invoke(); // เรียก Event แจ้งเตือนว่าตายแล้ว

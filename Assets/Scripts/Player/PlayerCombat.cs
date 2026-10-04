@@ -38,12 +38,9 @@ public class PlayerCombat : MonoBehaviour
             SpikeArmor spike = hit.GetComponent<SpikeArmor>();
             if (spike != null)
             {
-                // --- ส่วนที่แก้: เช็คบัฟ Spike Immune ---
                 if (EnchantManager.Instance != null && EnchantManager.Instance.hasSpikeImmune)
                 {
                     Debug.Log("เหยียบหนาม แต่มี Spike Immune! ไม่เสียเลือดแถมเหยียบมันตายได้ด้วย!");
-
-                    // เพิ่มโค้ดส่วนนี้: ทำดาเมจใส่ตัวหนามเลย!
                     IDamageable damageable = hit.GetComponent<IDamageable>();
                     if (damageable != null)
                     {
@@ -59,7 +56,6 @@ public class PlayerCombat : MonoBehaviour
                         Debug.Log("โอ๊ย! เหยียบโดนตัวหนาม ผู้เล่นเสียเลือด!");
                     }
                 }
-                // ------------------------------------
                 hitSomething = true;
             }
             // 2. ถ้าไม่มีหนาม ทำดาเมจปกติ
@@ -81,8 +77,15 @@ public class PlayerCombat : MonoBehaviour
                 hitSomething = true;
             }
 
+            // --- ถ้าเหยียบโดนอะไรสักอย่างให้ทำสิ่งนี้ ---
             if (hitSomething)
             {
+                // สั่งเล่น Particle ตรงตำแหน่งของศัตรู/ป้อม ที่ถูกเหยียบ
+                if (ParticleManager.Instance != null)
+                {
+                    ParticleManager.Instance.PlayStompImpact(stompCheck.position);
+                }
+
                 Bounce();
                 controller.isGroundPounding = false;
             }
@@ -94,6 +97,7 @@ public class PlayerCombat : MonoBehaviour
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0);
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, bounceForce);
     }
+
 
     private void OnDrawGizmosSelected()
     {

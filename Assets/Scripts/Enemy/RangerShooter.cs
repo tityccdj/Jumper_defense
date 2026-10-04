@@ -28,12 +28,25 @@ public class RangerShooter : MonoBehaviour
 
     void Update()
     {
+        // --- 1. เช็คว่ามีผู้เล่นอยู่ไหม ถ้าเป้าหมายหายไป ให้พยายามหาใหม่ ---
         if (player == null || !player.gameObject.activeInHierarchy)
         {
-            if (moveScript != null) moveScript.enabled = true;
-            return;
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+
+            if (p != null && p.activeInHierarchy)
+            {
+                // ถ้าเจอผู้เล่นใหม่ที่เพิ่งเกิด ให้ล็อกเป้าหมายใหม่ทันที
+                player = p.transform;
+            }
+            else
+            {
+                // ถ้ายังหาไม่เจอ (เช่น ผู้เล่นกำลังรอหน้าจอเกิด) ให้กลับไปเดินโง่ๆ ต่อ
+                if (moveScript != null) moveScript.enabled = true;
+                return;
+            }
         }
 
+        // --- โค้ดด้านล่างนี้เหมือนเดิม ---
         AimAtPlayer();
 
         float distance = Vector2.Distance(transform.position, player.position);
@@ -50,8 +63,6 @@ public class RangerShooter : MonoBehaviour
             // ยิง
             if (Time.time >= nextFireTime)
             {
-                // ---------------------------------------------------------
-                // --- วิธีแก้บั๊กกระสุนยิงกลับหลัง ---
                 // 1. หาเวกเตอร์ทิศทางจาก 'โคนปืน' พุ่งไปหา 'ปลายกระบอกปืน'
                 Vector2 actualShootDir = firePoint.position - gunPivot.position;
 
@@ -61,7 +72,6 @@ public class RangerShooter : MonoBehaviour
 
                 // 3. สั่งยิงโดยใช้องศาที่คำนวณใหม่แทน firePoint.rotation เดิม
                 Instantiate(bulletPrefab, firePoint.position, correctRotation);
-                // ---------------------------------------------------------
 
                 nextFireTime = Time.time + fireRate;
             }

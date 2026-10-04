@@ -485,63 +485,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!1001 &90703124
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 2938979195404521214, guid: cdb73ec4e87280b47bc1f14b8d0192c6, type: 3}
-      propertyPath: m_Name
-      value: RangerEnemy
-      objectReference: {fileID: 0}
-    - target: {fileID: 5079192617133176692, guid: cdb73ec4e87280b47bc1f14b8d0192c6, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 3.2
-      objectReference: {fileID: 0}
-    - target: {fileID: 5079192617133176692, guid: cdb73ec4e87280b47bc1f14b8d0192c6, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -2.59
-      objectReference: {fileID: 0}
-    - target: {fileID: 5079192617133176692, guid: cdb73ec4e87280b47bc1f14b8d0192c6, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5079192617133176692, guid: cdb73ec4e87280b47bc1f14b8d0192c6, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5079192617133176692, guid: cdb73ec4e87280b47bc1f14b8d0192c6, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5079192617133176692, guid: cdb73ec4e87280b47bc1f14b8d0192c6, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5079192617133176692, guid: cdb73ec4e87280b47bc1f14b8d0192c6, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5079192617133176692, guid: cdb73ec4e87280b47bc1f14b8d0192c6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5079192617133176692, guid: cdb73ec4e87280b47bc1f14b8d0192c6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5079192617133176692, guid: cdb73ec4e87280b47bc1f14b8d0192c6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: cdb73ec4e87280b47bc1f14b8d0192c6, type: 3}
 --- !u!1 &97052036
 GameObject:
   m_ObjectHideFlags: 0
@@ -689,6 +632,7 @@ GameObject:
   m_Component:
   - component: {fileID: 118273568}
   - component: {fileID: 118273569}
+  - component: {fileID: 118273570}
   m_Layer: 0
   m_Name: Triangle
   m_TagString: Untagged
@@ -766,6 +710,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &118273570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 118273567}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb15f2ffa7ac5404683b6337fe9e5eea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rotationSpeed: 100
 --- !u!1 &123658807
 GameObject:
   m_ObjectHideFlags: 0
@@ -1856,7 +1813,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 567c4e079797a9144b7b1bb7b961a6bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 20
+  maxHealth: 15
   currentHealth: 0
   destroyOnDie: 1
   hasInvincibility: 1
@@ -3337,7 +3294,6 @@ GameObject:
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
   - component: {fileID: 519420030}
-  - component: {fileID: 519420033}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -3463,38 +3419,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &519420033
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 519420028}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 72ece51f2901e7445ab60da3685d6b5f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowDebugText: 0
-  ShowCameraFrustum: 1
-  IgnoreTimeScale: 0
-  WorldUpOverride: {fileID: 0}
-  ChannelMask: -1
-  UpdateMethod: 2
-  BlendUpdateMethod: 1
-  LensModeOverride:
-    Enabled: 0
-    DefaultMode: 2
-  DefaultBlend:
-    Style: 1
-    Time: 2
-    CustomCurve:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-  CustomBlends: {fileID: 0}
 --- !u!1 &545391968
 GameObject:
   m_ObjectHideFlags: 0
@@ -5233,12 +5157,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c4dd197d51b30a4aac79f8dee074fcd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stompImpactPrefab: {fileID: 0}
+  stompImpactPrefab: {fileID: 6242082368832630680, guid: 472c1cdb24992c84cb778c2d08fe8272, type: 3}
   dashEffectPrefab: {fileID: 1831335737016836414, guid: fd25af06bfc85584f9c16c3e9bcf0427, type: 3}
   doubleJumpPrefab: {fileID: 3178321786563078462, guid: 7a59557e940294b4b8cdddc43389ad29, type: 3}
   playerUpgradePrefab: {fileID: 4315137355794114921, guid: 5f87feefb9eae26479b594f3877cdbb1, type: 3}
+  playerDeathPrefab: {fileID: 6503692101856820407, guid: 7638abe9fdabb324e8dea87aee623fff, type: 3}
   enemyHitPrefab: {fileID: 0}
-  enemyDeathPrefab: {fileID: 0}
+  enemyDeathPrefab: {fileID: 2912632458673617628, guid: 7ad51a7b63fb7894d94e76e736c8140a, type: 3}
   towerUpgradePrefab: {fileID: 4315137355794114921, guid: 5f87feefb9eae26479b594f3877cdbb1, type: 3}
 --- !u!4 &833605502
 Transform:
@@ -6251,6 +6176,7 @@ MonoBehaviour:
   dashParticle: {fileID: 1090796350}
   doubleJumpParticle: {fileID: 1494561908}
   groundPoundParticle: {fileID: 852285571}
+  playerDeathPrefab: {fileID: 0}
   isGroundPounding: 0
 --- !u!114 &967052855
 MonoBehaviour:
@@ -6325,6 +6251,18 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 967052850}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 967052854}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: SpawnPlayerDeathParticle
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -8279,7 +8217,7 @@ GameObject:
   - component: {fileID: 1324584491}
   - component: {fileID: 1324584489}
   m_Layer: 0
-  m_Name: EnemySpawner
+  m_Name: Wavemanager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8299,11 +8237,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   waves:
   - waveName: Wave1
-    totalEnemiesInWave: 1
+    totalEnemiesInWave: 8
     enemyGroups:
     - enemyPrefab: {fileID: 2938979195404521214, guid: 9c94914c9558d0144832f7c0919e2bb7, type: 3}
-      enemyCount: 1
-      spawnInterval: 1
+      enemyCount: 8
+      spawnInterval: 2
   - waveName: Wave2
     totalEnemiesInWave: 10
     enemyGroups:
@@ -11134,4 +11072,3 @@ SceneRoots:
   - {fileID: 1445281931}
   - {fileID: 1358810518}
   - {fileID: 742768848}
-  - {fileID: 90703124}

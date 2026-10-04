@@ -29,6 +29,7 @@ public class PlayerController : MonoBehaviour
     public ParticleSystem dashParticle;
     public ParticleSystem doubleJumpParticle;
     public ParticleSystem groundPoundParticle; // <--- 1. เพิ่มช่องสำหรับเอฟเฟกต์ตอนพุ่งลงพื้น
+    public GameObject playerDeathPrefab;
 
     private Rigidbody2D rb;
     private float horizontalInput;
@@ -41,7 +42,14 @@ public class PlayerController : MonoBehaviour
     private float dashCooldownTimer = 0f;
     private float originalGravity;
     private float lastFacingDirection = 1f;
-
+ 
+    public void SpawnPlayerDeathParticle()
+    {
+        if (ParticleManager.Instance != null)
+        {
+            ParticleManager.Instance.PlayPlayerDeath(transform.position);
+        }
+    }
     void Start()
     {
         if (anim == null) anim = GetComponent<Animator>();

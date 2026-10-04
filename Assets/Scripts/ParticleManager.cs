@@ -10,6 +10,7 @@ public class ParticleManager : MonoBehaviour
     public GameObject dashEffectPrefab;  // เอฟเฟกต์ตอนพุ่ง Dash
     public GameObject doubleJumpPrefab;  // เมฆเล็กๆ ตอนกระโดด 2 ชั้น
     public GameObject playerUpgradePrefab; // <--- 1. เพิ่มช่องสำหรับเอฟเฟกต์ตอนผู้เล่นอัปเกรดสกิล
+    public GameObject playerDeathPrefab;
 
     [Header("Enemy Effects")]
     public GameObject enemyHitPrefab;    // เลือดกระจาย หรือประกายไฟตอนโดนตี
@@ -82,5 +83,9 @@ public class ParticleManager : MonoBehaviour
     public void PlayTowerUpgrade(Vector3 position)
     {
         SpawnParticle(towerUpgradePrefab, position, 3f);
+    }
+    public void PlayPlayerDeath(Vector3 position)
+    {
+        SpawnParticle(playerDeathPrefab, position, 3f); // 3f คือเวลาลบทิ้ง
     }
 }
