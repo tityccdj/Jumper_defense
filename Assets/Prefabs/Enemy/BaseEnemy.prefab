@@ -272,7 +272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5228b0ba629533409f8450b1f86218d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseHP: 12
+  baseHP: 10
   hpScalePerWave: 2
 --- !u!1 &5142836614771801566
 GameObject:

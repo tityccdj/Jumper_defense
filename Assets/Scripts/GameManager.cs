@@ -16,6 +16,9 @@ public class GameManager : MonoBehaviour
     public float respawnCooldown = 10f; // เวลาเกิดใหม่ (วินาที)
     public TextMeshProUGUI respawnText; // UI นับถอยหลังบนจอ
 
+    // --- เพิ่มตัวแปรเช็คสถานะเกมจบ ---
+    private bool isGameOver = false;
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -24,35 +27,34 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        UIManager.Instance.UpdateCoinUI(coins); // สั่ง UI ให้อัปเดตเงิน
+        UIManager.Instance.UpdateCoinUI(coins);
         UIManager.Instance.UpdateShardUI(shards);
-    }
-    private void Update()
-    {
-
     }
 
     public void AddCoin(int amount)
     {
         coins += amount;
-        UIManager.Instance.UpdateCoinUI(coins); // สั่ง UI ให้อัปเดตเงิน
+        UIManager.Instance.UpdateCoinUI(coins);
     }
+
     public void AddShard(int amount)
     {
         shards += amount;
         UIManager.Instance.UpdateShardUI(shards);
         Debug.Log("ได้รับ Shard! ตอนนี้มี: " + shards + " ชิ้น");
     }
+
     public bool SpendCoin(int amount)
     {
         if (coins >= amount)
         {
             coins -= amount;
-            UIManager.Instance.UpdateCoinUI(coins); // สั่ง UI ให้อัปเดตเงิน
+            UIManager.Instance.UpdateCoinUI(coins);
             return true;
         }
         return false;
     }
+
     public bool SpendShard(int amount)
     {
         if (shards >= amount)
@@ -66,6 +68,14 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
+        isGameOver = true; // <--- แจ้งเตือนระบบว่าเกมจบแล้ว
+
+        // --- ปิดข้อความเกิดใหม่ทันที ---
+        if (respawnText != null)
+        {
+            respawnText.gameObject.SetActive(false);
+        }
+
         Debug.Log("Game Over! ฐานถูกทำลาย");
         UIManager.Instance.ShowGameOver(); // สั่ง UI โชว์หน้าแพ้
         Time.timeScale = 0f;               // หยุดเวลาในเกมทั้งหมด (มอนสเตอร์หยุดเดิน)
@@ -73,6 +83,9 @@ public class GameManager : MonoBehaviour
 
     public void GameWin()
     {
+        isGameOver = true; // กันไว้เผื่อชนะตอนกำลังตายพอดี
+        if (respawnText != null) respawnText.gameObject.SetActive(false);
+
         Debug.Log("You Win! กันได้ทุกเวฟ");
         UIManager.Instance.ShowWin();      // สั่ง UI โชว์หน้าชนะ
         Time.timeScale = 0f;               // หยุดเวลาเช่นกัน
@@ -80,12 +93,17 @@ public class GameManager : MonoBehaviour
 
     public void RestartGame()
     {
-        Time.timeScale = 1f; // สำคัญมาก! ต้องคืนค่าเวลาก่อนโหลดฉากใหม่ ไม่งั้นเกมจะค้างถาวร
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); // โหลดฉากปัจจุบันซ้ำ
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
+
     public void HandlePlayerDeath(GameObject player)
     {
-        StartCoroutine(RespawnRoutine(player));
+        // เช็คว่าถ้าเกมยังไม่จบ ถึงจะยอมให้นับถอยหลังเกิดใหม่
+        if (!isGameOver)
+        {
+            StartCoroutine(RespawnRoutine(player));
+        }
     }
 
     private IEnumerator RespawnRoutine(GameObject player)
@@ -101,17 +119,27 @@ public class GameManager : MonoBehaviour
 
         while (timer > 0)
         {
+            // --- เพิ่มเงื่อนไข: ถ้าเกมโอเวอร์ระหว่างที่กำลังตาย ให้หยุด Coroutine นี้ทิ้งไปเลย ---
+            if (isGameOver)
+            {
+                if (respawnText != null) respawnText.gameObject.SetActive(false);
+                yield break; // ดีดตัวออกจาก Coroutine ทันที
+            }
+            // -------------------------------------------------------------
+
             if (GameObject.FindGameObjectsWithTag("Enemy").Length == 0)
             {
                 Debug.Log("ศัตรูตายหมดฉากแล้ว! เกิดใหม่ทันที!");
-                break; // คำสั่ง break จะเตะเราออกจากลูป while ทันที โดยไม่ต้องรอให้ timer ถึง 0
+                break;
             }
-            // ------------------------
 
             if (respawnText != null) respawnText.text = "Respawn in: " + timer + "s";
             yield return new WaitForSeconds(1f); // รอทีละ 1 วินาที
             timer--;
         }
+
+        // เช็คอีกรอบก่อนโชว์ตัวละคร เผื่อฐานแตกตอนกำลังจะเกิดพอดี
+        if (isGameOver) yield break;
 
         if (respawnText != null) respawnText.gameObject.SetActive(false);
 

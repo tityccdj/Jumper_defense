@@ -45,9 +45,9 @@ public class ShopManager : MonoBehaviour
 
     public void CloseShop()
     {
-        selectedNode = null;
-        UIManager.Instance.CloseShop();
         Time.timeScale = 1f;
+        selectedNode = null;
+        UIManager.Instance.CloseShop(); 
     }
 
     // --- ระบบซื้อและอัปเกรด (คุยกับ GameManager เพื่อหักเงิน) ---

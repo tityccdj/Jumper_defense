@@ -118,6 +118,7 @@ public class UIManager : MonoBehaviour
     }
     public void CloseShop()
     {
+        Time.timeScale = 1.0f;
         if (shopUI != null) shopUI.SetActive(false);
         if (upgradeShopUI != null) upgradeShopUI.SetActive(false); // <--- เพิ่มบรรทัดนี้
     }

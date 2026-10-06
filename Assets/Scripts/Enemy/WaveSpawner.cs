@@ -139,7 +139,7 @@ public class WaveSpawner : MonoBehaviour
         currentWaveIndex++;
         Debug.Log("เคลียร์เวฟสำเร็จ! แจก Shard และรอผู้เล่นกดยืนยัน...");
 
-        if (GameManager.Instance != null) GameManager.Instance.AddShard(1);
+        if (GameManager.Instance != null) GameManager.Instance.AddShard(2);
         if (UIManager.Instance != null) UIManager.Instance.ToggleIntermission(true);
     }
 
